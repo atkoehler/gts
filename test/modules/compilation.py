@@ -1,4 +1,5 @@
 ## 
+# @file compilation.py
 # @author Adam Koehler
 # @date November 4, 2012
 #
@@ -30,7 +31,7 @@ COMPILER = "g++"
 # @return a tuple with two values. The first is the boolean of whether the 
 #          file compiled successfully. The second is a list of strings to 
 #          print to feedback: either errors or successful compilation.
-def comp(locations, rmexe=True, makefile=False):
+def compile(locations, rmexe=True, makefile=False):
     
     # need for os specific calls such 
     import os
