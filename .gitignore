@@ -1,5 +1,8 @@
 *.py[co]
 
+# Documentation
+docs/*
+
 # Packages
 *.egg
 *.egg-info
