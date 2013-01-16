@@ -1,0 +1,9 @@
+{
+"TESTABLES_DIRECTORY": "/home/csgrads/akoeh001/gts-test/students/akoehler",
+"TEST_DRIVER_DIRECTORY": "/home/csgrads/akoeh001/git/gts/test",
+"SUBMISSION": {
+        "user": "akoeh001@ucr.edu",
+        "timestamp": "2012-01-13-12-14-15"
+        },
+"ACTIONS": ["File Name Check", "File Header Check"]
+}
