@@ -30,9 +30,12 @@ class GalahResult:
                            "max_score": t.max_score, "message": t.message,
                            "parts": t.parts})
     
-    def update_score(self):
+    def calculate_scores(self):
+        self.score = 0
+        self.max_score = 0
         for test in self.tests:
             self.score += test["score"]
+            self.max_score += test["max_score"]
     
     def send(self):
         r = {"score": self.score, "max_score": self.max_score, 

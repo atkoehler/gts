@@ -5,5 +5,5 @@
         "user": "akoeh001@ucr.edu",
         "timestamp": "2012-01-13-12-14-15"
         },
-"ACTIONS": ["File Name Check", "File Header Check"]
+"ACTIONS": ["Source File Exist", "File Name Check", "File Header Check"]
 }

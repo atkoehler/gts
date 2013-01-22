@@ -21,24 +21,33 @@ config = GalahConfig()
 config.init_json()
 
 
-# set up the code path - single C++ file 
-import os
-source_file = True
-main_path = os.path.join(config.testables_dir, "main.cpp")
-if os.path.isfile(main_path):
-    code_path = main_path
-else:
-    file_name = [item for item in os.listdir(config.testables_dir) if item.endswith('.cpp')]
-    if len(file_name) > 0:       
-        code_path = os.path.join(config.testables_dir, file_name[0])
-    else:
-        source_file = False
+# generic return values
+OK = 0
+ERROR = -1
 
 # create result object 
 result = GalahResult()
 
-# nothing can be done if C++ file was discovered
-if source_file: 
+
+# determine if source file exists
+name = "Source File Exist"
+if name in config.actions:
+    # create test object
+    t = GalahTest()
+    t.name = name
+     
+    # run test
+    import modules.findsource as findsource
+    src = findsource.test((config.testables_dir, config.harness_dir), t, True)
+    source_exist = (src != "")
+    
+    # add test to result
+    result.add_test(t)
+    del(t)
+    
+
+# nothing can be done if no source file was discovered
+if source_exist: 
     # run test if it is within the configuration actions
     name = "File Name Check"
     if name in config.actions:
@@ -48,14 +57,18 @@ if source_file:
          
         # run test
         import modules.filename as filename
-        filename.test((config.testables_dir, config.harness_dir), t)
+        completed = filename.test((config.testables_dir, config.harness_dir), t)
         
         # add test to result
-        result.add_test(t)
+        if completed == OK:
+            result.add_test(t)
+        
+        del(t)
 
 
-# update score of result based on tests
-result.update_score()
+# calculate the scores associated with result based on tests
+result.calculate_scores()
+
 
 # min score of 0
 if result.score < 0:
