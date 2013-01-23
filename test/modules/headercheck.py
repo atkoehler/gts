@@ -14,9 +14,10 @@
 # 
 # @param locations tuple (location of code, location of harness)
 # @param test_obj the test object that is an object with properties to fill out
+# @param source the source object contain name, location and content splits
 #
 # @return 0 if test completed successfully, otherwise -1
-def test(locations, test_obj):
+def test(locations, test_obj, source):
     OK = 0
     ERROR = -1
 

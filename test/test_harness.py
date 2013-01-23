@@ -15,6 +15,7 @@
 import json
 import sys
 from galah.interact import *
+from system.testfile import *
 
 # create configuration object from Galah provided JSON file
 config = GalahConfig()
@@ -25,30 +26,44 @@ config.init_json()
 OK = 0
 ERROR = -1
 
-# create result object 
+##
+# create Galah result object 
+#
 result = GalahResult()
 
 
+##
+# create source file object and initialize values
+# this test is required as set up to all other tests and thus cannot be
+# removed from within the configurable actions list
+#
+source = SourceFile()
+
 # determine if source file exists
 name = "Source File Exist"
-if name in config.actions:
-    # create test object
-    t = GalahTest()
-    t.name = name
-     
-    # run test
-    import modules.findsource as findsource
-    src = findsource.test((config.testables_dir, config.harness_dir), t, True)
-    source_exist = (src != "")
-    
-    # add test to result
-    result.add_test(t)
-    del(t)
+
+# create test object
+t = GalahTest()
+t.name = name
+ 
+# run test
+import system.findsource as findsource
+source_exist = findsource.test((config.testables_dir, config.harness_dir), t, source, True)
+
+# split the file into code, header and comments
+if source_exist:
+    source.split_file()
+
+# add test to result so feedback exists stating which file was tested if any
+result.add_test(t)
+del(t)
     
 
 # nothing can be done if no source file was discovered
 if source_exist: 
+    ##
     # run test if it is within the configuration actions
+    #
     name = "File Name Check"
     if name in config.actions:
         # create test object
@@ -58,6 +73,22 @@ if source_exist:
         # run test
         import modules.filename as filename
         completed = filename.test((config.testables_dir, config.harness_dir), t)
+        
+        # add test to result
+        if completed == OK:
+            result.add_test(t)
+        
+        del(t)
+    
+    name = "File Header Check"
+    if name in config.actions:
+        # create test object
+        t = GalahTest()
+        t.name = name
+         
+        # run test
+        import modules.headercheck as headercheck
+        completed = headercheck.test((config.testables_dir, config.harness_dir), t, source)
         
         # add test to result
         if completed == OK:
