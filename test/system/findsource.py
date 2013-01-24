@@ -1,5 +1,5 @@
 ##
-# @file modules/findsource.py 
+# @file system/findsource.py 
 # @author Adam Koehler
 # @date January 23, 2013
 # 

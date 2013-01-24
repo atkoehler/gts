@@ -88,7 +88,7 @@ if source_exist:
          
         # run test
         import modules.headercheck as headercheck
-        completed = headercheck.test((config.testables_dir, config.harness_dir), t, source)
+        completed = headercheck.test((config.testables_dir, config.harness_dir), t, source, config.submission)
         
         # add test to result
         if completed == OK:
