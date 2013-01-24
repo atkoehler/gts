@@ -64,7 +64,7 @@ class GalahConfig:
 
         values = json.load(sys.stdin)
         self.testables_dir = values["TESTABLES_DIRECTORY"]
-        self.harness_dir = values["TEST_DRIVER_DIRECTORY"]
+        self.harness_dir = values["TEST_HARNESS_DIRECTORY"]
         self.submission = values["SUBMISSION"]
         self.actions = values["ACTIONS"]
     
