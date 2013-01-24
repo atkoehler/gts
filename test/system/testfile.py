@@ -1,3 +1,7 @@
+# TODO: Flags should be in some sort of configuration file?
+BEGIN_HDR_FLAG = "BEGIN ASSIGNMENT HEADER"
+END_HDR_FLAG = "END ASSIGNMENT HEADER"
+
 class SourceFile:
     def __init__(self, file_loc="", code="", header=[], comments=[], name=""):
         self.code = code
@@ -29,12 +33,12 @@ class SourceFile:
          
         inHeader = False
         for i in allcomments:
-            if i.find("BEGIN ASSIGNMENT HEADER") != -1:
+            if i.lower().find(BEGIN_HDR_FLAG.lower()) != -1:
                 inHeader = True
                 self.header.append(i)
                 continue
             
-            if i.find("END ASSIGNMENT HEADER") != -1:
+            if i.lower().find(END_HDR_FLAG.lower()) != -1:
                 inHeader = False
                 self.header.append(i)
                 continue

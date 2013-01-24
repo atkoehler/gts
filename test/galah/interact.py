@@ -26,16 +26,15 @@ class GalahResult:
                 "tests": self.tests}
 
     def add_test(self, t):
-        # convert the parts if the exist
-        part_trans = []
+        # convert the parts if they exist
+        part_transition = []
         for part in t.parts:
-            part_trans.append({"name": part.name, "score": part.score, 
-                               "max_score": part.max_score})
+            part_transition.append([part.name, part.score, part.max_score])
         
         # convert and add the test
         self.tests.append({"name": t.name, "score": t.score, 
                            "max_score": t.max_score, "message": t.message,
-                           "parts": t.parts})
+                           "parts": part_transition})
     
     def calculate_scores(self):
         self.score = 0

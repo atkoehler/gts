@@ -105,7 +105,6 @@ result.calculate_scores()
 if result.score < 0:
     result.score = 0
 
-
 # output result as JSON
 result.send()
 print ""
