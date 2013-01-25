@@ -1,9 +1,16 @@
 ## 
+# @file modules/headercheck.py
 # @author Adam Koehler
-# @date January 22, 2013
+# @date January 24, 2013
 #
 # @brief this module provides the means to check the header of source file
 #        the header is standardized using doxygen tags
+#
+#   This module checks three things. First, it verifies the author's email on 
+#   the @author line against the email of the submitter. Second, it checks the 
+#   existence and wording of the anti-plagiarism lines. Lastly, it checks 
+#   whether the lines that signal beginning and ending of the assignment 
+#   header exist.
 #
 
 # TODO: these should possibly come from some configuration file

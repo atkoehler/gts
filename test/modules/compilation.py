@@ -1,5 +1,5 @@
 ## 
-# @file compilation.py
+# @file modules/compilation.py
 # @author Adam Koehler
 # @date November 4, 2012
 #
