@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 ##
 # @file test_harness.py
 # @brief the launching script for any test harness
