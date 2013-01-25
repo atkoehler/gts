@@ -17,7 +17,7 @@ PENALTY = 25
 # @brief test function checks file name against a required name
 # 
 # @param locations tuple (location of code, location of harness)
-# @param test_obj the test object that is a dictionary defining the test
+# @param test_obj the test object containing properties to fill out
 #
 # @return 0 if test completed successfully, otherwise -1
 #

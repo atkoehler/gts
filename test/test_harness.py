@@ -77,7 +77,6 @@ if source_exist:
         # add test to result
         if completed == OK:
             result.add_test(t)
-        
         del(t)
     
     name = "File Header Check"
@@ -93,7 +92,21 @@ if source_exist:
         # add test to result
         if completed == OK:
             result.add_test(t)
+        del(t)
+
+    name = "Coding Style Check"
+    if name in config.actions:
+        # create test object
+        t = GalahTest()
+        t.name = name
+         
+        # run test
+        import modules.stylecheck as stylecheck
+        completed = stylecheck.test((config.testables_dir, config.harness_dir), t, source)
         
+        # add test to result
+        if completed == OK:
+            result.add_test(t)
         del(t)
 
 

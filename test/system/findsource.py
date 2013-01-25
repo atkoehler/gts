@@ -6,6 +6,7 @@
 # @brief finds the source file within testing directory if one exists
 #
 
+# TODO: this probably should come from config file
 SOURCE_EXT = ".cpp"
 
 
@@ -13,12 +14,13 @@ SOURCE_EXT = ".cpp"
 # @brief findsource module determines whether source file exists for testing
 # 
 # @param locations tuple (location of code, location of harness)
-# @param test_obj the test object that is a dictionary defining the test
+# @param test_obj the test object containing properties to fill out
 # @param source the source file object to store file name and location into
 # @param allow_multiple allow multiple source files in directory, will 
 #           choose main with extension if exists otherwise first alphabetical
 #
 # @return True if source file is discovered otherwise False
+#
 def test(locations, test_obj, source, allow_multiple):
     
     source_name = "main" + SOURCE_EXT

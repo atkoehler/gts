@@ -7,7 +7,7 @@ class SourceFile:
         self.code = code
         self.header = header
         self.comments = comments
-        self.file_loc = file_loc
+        self.file_loc = file_loc  # code path joined with source file name
         self.name = name
     
     # TODO: implement try block for opening file

@@ -29,8 +29,8 @@ from galah.interact import *
 #        the assignment header exists and is properly filled in
 # 
 # @param locations tuple (location of code, location of harness)
-# @param test_obj the test object that is an object with properties to fill out
-# @param source the source object contain name, location and content splits
+# @param test_obj the test object containing properties to fill out
+# @param source the source object containing name, location and content splits
 #
 # @return 0 if test completed, otherwise -1
 #
@@ -62,6 +62,7 @@ def test(locations, test_obj, source, submission):
                 else:
                     test_obj.message += "\n\n" + m
             test_obj.parts.append(sub_test)
+            del(sub_test)
          
         # anti-plagiarism lines check
         if line.lower().find(PLAGIARISM_TAG.lower()) != -1:
@@ -82,9 +83,11 @@ def test(locations, test_obj, source, submission):
                         test_obj.message += m
                     else:
                         test_obj.message += "\n\n" + m
-                
+            
             test_obj.parts.append(sub_test)
+            del(sub_test)
         
+        # flags for beginning and ending of assignment header 
         if line.lower().find(BEGIN_HDR_FLAG.lower()) != -1:
             found_begin = True
         
@@ -103,6 +106,7 @@ def test(locations, test_obj, source, submission):
             test_obj.message += "\n\n" + m
     
     test_obj.parts.append(sub_test)
+    del(sub_test)
 
     # go over test parts, if one failed apply penalty
     for test in test_obj.parts:
