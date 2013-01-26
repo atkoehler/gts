@@ -108,13 +108,11 @@ def globals_exist(test, harness_dir, source):
     from system.functions import which
     
     # make sure the commands exist
-    mkdir = which("mkdir")
     nm = which("nm")
     grep = which("grep")
     cut = which("cut")
-    rm = which("rm")
     gpp = which("g++")
-    if mkdir == None or rm == None or nm == None or grep == None or cut == None or gpp == None:
+    if nm == None or grep == None or cut == None or gpp == None:
         return
     
     # check if working directory exists, if not make one
