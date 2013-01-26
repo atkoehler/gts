@@ -63,9 +63,9 @@ class GalahConfig:
         import sys
 
         values = json.load(sys.stdin)
-        self.testables_dir = values["TESTABLES_DIRECTORY"]
-        self.harness_dir = values["TEST_HARNESS_DIRECTORY"]
-        self.submission = values["SUBMISSION"]
-        self.actions = values["ACTIONS"]
+        self.testables_dir = values["testables_directory"]
+        self.harness_dir = values["harness_directory"]
+        self.submission = values["raw_submission"]
+        self.actions = values["actions"]
     
 

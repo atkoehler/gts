@@ -1,9 +1,9 @@
 {
-"TESTABLES_DIRECTORY": "/home/csgrads/akoeh001/gts-test/students/akoehler",
-"TEST_HARNESS_DIRECTORY": "/home/csgrads/akoeh001/git/gts/test",
-"SUBMISSION": {
+"testables_directory": "/home/csgrads/akoeh001/gts-test/students/akoehler",
+"harness_directory": "/home/csgrads/akoeh001/git/gts/test",
+"raw_submission": {
         "user": "akoeh001@ucr.edu",
         "timestamp": "2012-01-13-12-14-15"
         },
-"ACTIONS": ["File Name Check", "File Header Check", "Coding Style Check"]
+"actions": ["File Name Check", "File Header Check", "Coding Style Check"]
 }
