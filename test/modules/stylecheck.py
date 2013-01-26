@@ -104,6 +104,7 @@ def test(locations, test_obj, source):
 #
 def globals_exist(test, harness_dir, source):
     import os
+    import shutil
     from system.functions import which
     
     # make sure the commands exist
@@ -118,23 +119,18 @@ def globals_exist(test, harness_dir, source):
     
     # check if working directory exists, if not make one
     working_dir = os.path.join(harness_dir, "working")
-    command = mkdir + " -p " + working_dir
-    os.system(command)
+    if not os.path.exists(working_dir):
+        os.mkdir(working_dir)
     
-    object_file = source.name[0:source.name.find(".")] + ".o"
-    obj_loc = os.path.join(working_dir, object_file)
-  
     vars = [] 
     FNULL = open(os.devnull, 'w')
     try:
         import subprocess
 
         # compile the object file
-        rename_option = "-o " + obj_loc
-        tonull = "&> /dev/null"
-        command = gpp +" -c "+ rename_option +" "+ source.file_loc +" "+ tonull
-        os.system(command)
-        #subprocess.check_call(["g++", "-o", obj_loc, source.file_loc])
+        object_file = source.name[0:source.name.find(".")] + ".o"
+        obj_loc = os.path.join(working_dir, object_file)
+        subprocess.check_call([gpp, "-o", obj_loc, source.file_loc])
         
         # get object symbols
         symf = os.path.join(working_dir, "symbols.txt")
@@ -156,21 +152,21 @@ def globals_exist(test, harness_dir, source):
                 subprocess.check_call([cut, "-d", " ", "-f" "3"],
                                stdout=cut_file, stdin=grep_file, stderr=FNULL)
         
-        # split the global variables into a list
-        vars = open(cutf).read().rstrip().rstrip('\n').split("\n")
+        # split the global variables into a list, exclude vars starting with _
+        contents = open(cutf).read().rstrip().rstrip('\n').split("\n")
+        for (i, val) in enumerate(contents):
+            if val[0] != '_':
+                vars.append(val)
     
     except subprocess.CalledProcessError:
     # TODO: determine what to do in except clause, outputing error cause issue?
-        # remove working directory
-        command = rm + " -rf " + working_dir
-        os.system(command) 
         FNULL.close()
+        shutil.rmtree(working_dir)
         test.score = -1 * DEDUCTION_PER_GAFFE * len(vars)
         return vars
     
     # remove working directory
-    command = rm + " -rf " + working_dir
-    os.system(command) 
+    shutil.rmtree(working_dir)
     FNULL.close() 
     test.score = -1 * DEDUCTION_PER_GAFFE * len(vars)
     return vars

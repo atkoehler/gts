@@ -122,6 +122,3 @@ if result.score < 0:
 
 # output result as JSON
 result.send()
-print ""
-print ""
-print "Final score: ", result.score, " out of ", result.max_score
