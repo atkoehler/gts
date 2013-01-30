@@ -117,4 +117,4 @@ if result.score < 0:
     result.score = 0
 
 # send result back to Galah 
-#result.send()
+result.send()
