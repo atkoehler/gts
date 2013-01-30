@@ -4,68 +4,89 @@ class GalahTestPart:
         self.score = score
         self.max_score = max_score
     
+    def to_list(self):
+        return [self.name, self.score, self.max_score]
+    
 
 class GalahTest:
-    def __init__(self, name="", score=0, max_score=0, message="", parts=[]):
+    def __init__(self, name="", score=0, max_score=0, message="", parts=None):
+        if parts is None:
+            parts = []
+        
         self.name = name
         self.score = score
         self.max_score = max_score
         self.message = message
         self.parts = parts
     
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "score": self.score,
+            "max_score": self.max_score,
+            "message": self.message,
+            "parts": [i.to_list() for i in self.parts]
+        }
+    
 
 class GalahResult:
-    def __init__(self, score=0, max_score=0, tests=[]):
+    def __init__(self, score=0, max_score=0, tests=None):
+        if tests is None:
+            tests = []
+        
         self.score = score;
         self.max_score = max_score
         self.tests = tests
     
-    def to_json(self):
-        return {"score": self.score, 
-                "max_score": self.max_score, 
-                "tests": self.tests}
-
-    def add_test(self, t):
-        # convert the parts if they exist
-        part_transition = []
-        for part in t.parts:
-            part_transition.append([part.name, part.score, part.max_score])
-        
-        # convert and add the test
-        self.tests.append({"name": t.name, "score": t.score, 
-                           "max_score": t.max_score, "message": t.message,
-                           "parts": part_transition})
+    def to_dict(self):
+        return {
+            "score": self.score,
+            "max_score": self.max_score,
+            "tests": [i.to_dict() for i in self.tests]
+        }
     
     def calculate_scores(self):
-        self.score = 0
-        self.max_score = 0
-        for test in self.tests:
-            self.score += test["score"]
-            self.max_score += test["max_score"]
-    
+        """
+        Sets score and max_score by summing up the scores and maximum scores of
+        each test, respectively.
+        
+        """
+
+        self.score = sum(i.score for i in self.tests)
+        self.max_score = sum(i.max_score for i in self.tests)
+   
+    def add_test(self, test):
+        self.tests.append(test)
+     
     def send(self):
-        r = {"score": self.score, "max_score": self.max_score, 
-             "tests": self.tests}
         import json
         import sys
-        json.dump(r, sys.stdout)
+        json.dump(self.to_dict(), sys.stdout)
     
 
+import json
+import sys
 class GalahConfig:
-    def __init__(self, testables_dir="", harness_dir="", submission={}, actions=[]):
-        self.testables_dir = testables_dir
-        self.harness_dir = harness_dir
+    def __init__(self, testables_dir = "", harness_dir = "", submission = None,
+            harness = None, actions = None):
+        if actions is None:
+            actions = []
+        
+        self.testables_directory = testables_dir
+        self.harness_directory = harness_dir
         self.submission = submission
+        self.harness = harness
         self.actions = actions
     
-    def init_json(self):
-        import json
-        import sys
-
-        values = json.load(sys.stdin)
-        self.testables_dir = values["testables_directory"]
-        self.harness_dir = values["harness_directory"]
-        self.submission = values["raw_submission"]
-        self.actions = values["actions"]
-    
+    @staticmethod
+    def from_file(file_object = sys.stdin):
+        values = json.load(file_object)
+        
+        return GalahConfig(
+            testables_dir = values["testables_directory"],
+            harness_dir = values["harness_directory"],
+            submission = values["raw_submission"],
+            harness = values["raw_harness"],
+            actions = values["actions"]
+        )
 
