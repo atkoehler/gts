@@ -58,11 +58,8 @@ class GalahResult:
 import json
 import sys
 class GalahConfig:
-    def __init__(self, testables_dir = "", harness_dir = "", submission = None,
+    def __init__(self, testables_dir = None, harness_dir = None, submission = None,
             harness = None, actions = None):
-        if actions is None:
-            actions = []
-
         self.testables_directory = testables_dir
         self.harness_directory = harness_dir
         self.submission = submission
