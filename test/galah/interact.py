@@ -9,7 +9,10 @@ class GalahTestPart:
 
 
 class GalahTest:
-    def __init__(self, name = "", score = 0, max_score = 0, message = "", parts = []):
+    def __init__(self, name = "", score = 0, max_score = 0, message = "", parts = None):
+        if parts is None:
+            parts = []
+
         self.name = name
         self.score = score
         self.max_score = max_score
@@ -27,7 +30,10 @@ class GalahTest:
 
 
 class GalahResult:
-    def __init__(self, score = 0, max_score = 0, tests = []):
+    def __init__(self, score = 0, max_score = 0, tests = None):
+        if tests is None:
+            tests = []
+
         self.score = score;
         self.max_score = max_score
         self.tests = tests
@@ -52,8 +58,11 @@ class GalahResult:
 import json
 import sys
 class GalahConfig:
-    def __init__(self, testables_dir = "", harness_dir = "", submission = {},
-            harness = {}, actions=[]):
+    def __init__(self, testables_dir = "", harness_dir = "", submission = None,
+            harness = None, actions = None):
+        if actions is None:
+            actions = []
+
         self.testables_directory = testables_dir
         self.harness_directory = harness_dir
         self.submission = submission
