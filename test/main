@@ -20,9 +20,7 @@ from galah.interact import *
 from system.testfile import *
 
 # create configuration object from Galah provided JSON file
-config = GalahConfig()
-config.init_json()
-
+config = GalahConfig().from_file()
 
 # generic return values
 OK = 0
@@ -50,7 +48,7 @@ t.name = name
  
 # run test
 import system.findsource as findsource
-source_exist = findsource.test((config.testables_dir, config.harness_dir), t, source, True)
+source_exist = findsource.test((config.testables_directory, config.harness_directory), t, source, True)
 
 # split the file into code, header and comments
 if source_exist:
@@ -58,8 +56,7 @@ if source_exist:
 
 # add test to result so feedback exists stating which file was tested if any
 result.add_test(t)
-del(t)
-    
+
 
 # nothing can be done if no source file was discovered
 if source_exist: 
@@ -74,12 +71,12 @@ if source_exist:
          
         # run test
         import modules.filename as filename
-        completed = filename.test((config.testables_dir, config.harness_dir), t)
+        completed = filename.test((config.testables_directory, config.harness_directory), t)
         
         # add test to result
         if completed == OK:
             result.add_test(t)
-        del(t)
+    
     
     name = "File Header Check"
     if name in config.actions:
@@ -89,13 +86,13 @@ if source_exist:
          
         # run test
         import modules.headercheck as headercheck
-        completed = headercheck.test((config.testables_dir, config.harness_dir), t, source, config.submission)
+        completed = headercheck.test((config.testables_directory, config.harness_directory), t, source, config.submission)
         
         # add test to result
         if completed == OK:
             result.add_test(t)
-        del(t)
-
+    
+    
     name = "Coding Style Check"
     if name in config.actions:
         # create test object
@@ -104,12 +101,11 @@ if source_exist:
          
         # run test
         import modules.stylecheck as stylecheck
-        completed = stylecheck.test((config.testables_dir, config.harness_dir), t, source)
+        completed = stylecheck.test((config.testables_directory, config.harness_directory), t, source)
         
         # add test to result
         if completed == OK:
             result.add_test(t)
-        del(t)
 
 
 # calculate the scores associated with result based on tests
@@ -120,5 +116,5 @@ result.calculate_scores()
 if result.score < 0:
     result.score = 0
 
-# output result as JSON
-result.send()
+# send result back to Galah 
+#result.send()
