@@ -1,5 +1,5 @@
 class GalahTestPart:
-    def __init__(self, name="", score=0, max_score=0):
+    def __init__(self, name = "", score = 0, max_score = 0):
         self.name = name
         self.score = score
         self.max_score = max_score
@@ -12,7 +12,16 @@ class GalahTest:
     def __init__(self, name="", score=0, max_score=0, message="", parts=None):
         if parts is None:
             parts = []
-        
+    
+    def to_list(self):
+        return [self.name, self.score, self.max_score]
+
+
+class GalahTest:
+    def __init__(self, name = "", score = 0, max_score = 0, message = "", parts = None):
+        if parts is None:
+            parts = []
+
         self.name = name
         self.score = score
         self.max_score = max_score
@@ -38,6 +47,16 @@ class GalahResult:
         self.max_score = max_score
         self.tests = tests
     
+
+class GalahResult:
+    def __init__(self, score = 0, max_score = 0, tests = None):
+        if tests is None:
+            tests = []
+
+        self.score = score;
+        self.max_score = max_score
+        self.tests = tests
+    
     def to_dict(self):
         return {
             "score": self.score,
@@ -54,7 +73,7 @@ class GalahResult:
 
         self.score = sum(i.score for i in self.tests)
         self.max_score = sum(i.max_score for i in self.tests)
-   
+    
     def add_test(self, test):
         self.tests.append(test)
      
@@ -62,16 +81,14 @@ class GalahResult:
         import json
         import sys
         json.dump(self.to_dict(), sys.stdout)
-    
+
 
 import json
 import sys
 class GalahConfig:
-    def __init__(self, testables_dir = "", harness_dir = "", submission = None,
-            harness = None, actions = None):
+    def __init__(self, testables_dir = None, harness_dir = None,                                 submission = None, harness = None, actions = None):
         if actions is None:
             actions = []
-        
         self.testables_directory = testables_dir
         self.harness_directory = harness_dir
         self.submission = submission
@@ -89,4 +106,5 @@ class GalahConfig:
             harness = values["raw_harness"],
             actions = values["actions"]
         )
+
 
