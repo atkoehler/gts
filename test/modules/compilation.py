@@ -18,7 +18,7 @@ COMPILER = "g++"
 WORKING_DIR_NAME = "working"
 EXE_NAME = "test_program"
 COMPILER_ERR_FNAME = "compiler_errors.txt"
-PENALTY = 20
+PENALTY = 25
 INCLUDES_DIR = "system/includes"
 
 ## 
@@ -131,6 +131,11 @@ def strip_comments(file_wpath, harness_dir):
     # grab proper g++ command 
     gpp = which("g++")
 
+    if gpp is None:
+        message = "g++ compiler not found, could not strip comments"
+        compiled = False
+        return {"success": compiled, "message": message}
+    
     # pull out file path to trim any error messages to just name or local path
     file_path = file_wpath[0:file_wpath.rfind("/")+1]
     
@@ -139,7 +144,7 @@ def strip_comments(file_wpath, harness_dir):
 
     # attempt compilation
     try:
-        message = subprocess.check_output([gpp, "-fpreprocessed", "-dD", "-E", 
+        message = subprocess.check_output([gpp, "-fpreprocessed", "-E", 
                                           "-I", include_path, 
                                           file_wpath], 
                                     stderr=subprocess.STDOUT)
@@ -148,6 +153,9 @@ def strip_comments(file_wpath, harness_dir):
     except subprocess.CalledProcessError as e:
         message = "Stripping comments from file failed"
         compiled = False
- 
+    
+    if compiled:
+        message = message[message.find("\n"):] 
+    
     return {"success": compiled, "message": message}
 
