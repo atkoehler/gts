@@ -25,7 +25,7 @@ def test(locations, test_obj):
     OK = 0
 
     import os    
-    main_path = os.path.join(locations[0], "main.cpp")
+    main_path = os.path.join(locations[0], PROPER_FILE_NAME)
     if not os.path.isfile(main_path):
         test_obj.score = -1 * PENALTY
         test_obj.message = "File name not " + PROPER_FILE_NAME
