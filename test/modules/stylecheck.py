@@ -10,6 +10,8 @@
 STYLE_PENALTY_MAX = 10
 DEDUCTION_PER_GAFFE = 5
 LONG_LINE_COUNT = 80
+WORKING_DIR_NAME = "working"
+COMPILER = "g++"
 
 from galah.interact import *
 
@@ -111,12 +113,12 @@ def globals_exist(test, harness_dir, source):
     nm = which("nm")
     grep = which("grep")
     cut = which("cut")
-    gpp = which("g++")
+    gpp = which(COMPILER)
     if nm == None or grep == None or cut == None or gpp == None:
         return
     
     # check if working directory exists, if not make one
-    working_dir = os.path.join(harness_dir, "working")
+    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
     
@@ -128,7 +130,8 @@ def globals_exist(test, harness_dir, source):
         # compile the object file
         object_file = source.name[0:source.name.find(".")] + ".o"
         obj_loc = os.path.join(working_dir, object_file)
-        subprocess.check_call([gpp, "-o", obj_loc, source.file_loc])
+        subprocess.check_call([gpp, "-o", obj_loc, source.file_loc], 
+                              stdout=FNULL, stderr=subprocess.STDOUT)
         
         # get object symbols
         symf = os.path.join(working_dir, "symbols.txt")

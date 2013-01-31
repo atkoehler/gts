@@ -1,7 +1,7 @@
 ## 
 # @file modules/compilation.py
 # @author Adam Koehler
-# @date November 4, 2012
+# @date January 30, 2013
 #
 # @brief this module provides the means to compile a single or series
 #        of files with or without a makefile.
@@ -15,109 +15,139 @@
 # TODO: once complete, utilize import or whatever is needed
 TYPE = ".cpp"
 COMPILER = "g++"
-
-# TODO: split non-makefile and makefile compilation into functions
+WORKING_DIR_NAME = "working"
+EXE_NAME = "test_program"
+COMPILER_ERR_FNAME = "compiler_errors.txt"
+PENALTY = 20
+INCLUDES_DIR = "system/includes"
 
 ## 
-# @brief the compilation module compiles a single or series of files
+# @brief test function checks various style parts for the program
 # 
-# @precondition if an includes directory is used, the files must exist 
-#               in that directory or within an immediate sub-directory 
+# @param locations tuple (location of code, location of harness)
+# @param test_obj the test object containing properties to fill out
+# @param source the source object containing name, location and content splits
 #
-# @param locations tuple (location of files, working dir[, includes dir])
-# @param makefile boolean, defaults to False, should makefile be used
-# @param rmexe boolean, defaults to True, should executable be deleted
+# @return 0 if test completed successfully, otherwise -1
 #
-# @return a tuple with two values. The first is the boolean of whether the 
-#          file compiled successfully. The second is a list of strings to 
-#          print to feedback: either errors or successful compilation.
-def compile(locations, rmexe=True, makefile=False):
-    
-    # need for os specific calls such 
+def test(locations, test_obj, source):
     import os
+    OK = 0
+    ERROR = -1
     
-    # for string replace
-    import string
+    harness_dir = locations[1]
     
-    # working directory location
-    working_dir = locations[1]
-    
-    # testing executable
-    test_program = working_dir + "/test_program"
-    
-    # compiler errors file
-    compile_err = working_dir + "/compile.err"
-    
-    # remove command
-    remove_str = "rm"
-    
-    # initial value for compilation (assume failure)
-    compile_return = 1
+    # check if working directory exists, if not make one
+    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
+    if not os.path.exists(working_dir):
+        os.mkdir(working_dir)
     
     
-    # Formulate the linux command line call
-    if makefile == False:
-        # determine all the files to compile
-        file_loc = locations[0]
-        
-        # append ending slash if needed
-        if file_loc[-1] != "/":
-            file_loc = file_loc + "/"
-        
-        compile_str = COMPILER + " -o " + test_program + " "
-       
-        #add include dir to includes path if needed
-        if len(locations) == 3:
-            compile_str = compile_str + "-I " + locations[2] + " "
-            compile_str = compile_str + "-I " + locations[2] + "/* "
-        
-        found_file = False
-        
-        # loop over all files in directory
-        for file in os.listdir(file_loc):
-            if file.endswith(TYPE):
-                found_file = True
-                
-                # add file name to compilation string
-                compile_str = compile_str + file_loc + file + " "
-        
-        if found_file == True:
-            compile_str = compile_str + " 2>" + compile_err                
-            
-            # compile the files and add errors to error file
-            compile_return = os.system(compile_str)
-            remove_str = remove_str + " " + compile_err
-    else:
-        donothing = "" 
-        # case where makefile is utilized 
-        # TODO: should use student makefile?  or a solution?   
+    # set up compiler error text file path
+    compile_err_path = os.path.join(working_dir, COMPILER_ERR_FNAME)
     
-    # Initialize a string for returning feedback
-    feedback = ""
-    
-    # Check if compilation was a success
-    if compile_return == 0:
-        module_return = 0
-        feedback = "Compilation completed successfully.\n"
-        
-        if rmexe == True:
-            remove_str = remove_str + " " + test_program
-        
-    # Compilation failure, capture compile errors 
-    else:
-        module_return = 1
-        f = open(compile_err,'r')
-        # loop over the lines in error file, split off the base dir
-        for line in f:
-            feedback = feedback + string.replace(line, file_loc, "")
-        f.close()
-    
-    # Clean up generated files
-    os.system(remove_str)
-    
-    # Form tuple of the module return value and compilation errors
-    return_value = (module_return, feedback)
-    
-    return return_value
+    # set up path to executable rename
+    exe_path = os.path.join(working_dir, EXE_NAME)
 
+    # attempt compilation
+    ret_val = compile_single(source.file_loc, exe_path, harness_dir)
+    
+    # set test object message to message of compilation return value
+    test_obj.message = ret_val["message"]
+   
+    # enforce penalty if needed 
+    if not ret_val["success"]:
+        test_obj.score = -1 * PENALTY
+    
+    # remove the working directory
+    import shutil
+    shutil.rmtree(working_dir)    
+    
+    return OK
+
+
+## 
+# @brief the compile_single function compiles a single file
+# 
+# @param file_wpath source file with full path
+# @param output_wpath output file name with full path
+# @param harness_dir full path to harness directory
+#
+# @return a dictionary with two values. The first boolean with key success.
+#         The second key of message containing a message of compilation success
+#         or failure containing any errors produced by compilation call.
+#
+# @precondition all included files must be at base level of includes directory
+#
+def compile_single(file_wpath, output_wpath, harness_dir):
+    import os
+    import subprocess
+    from system.functions import which
+   
+    # grab proper g++ command 
+    gpp = which("g++")
+
+    # set up successful message
+    message = "Compiled successfully"     
+
+    # pull out file path to trim any error messages to just name or local path
+    file_path = file_wpath[0:file_wpath.rfind("/")+1]
+    
+    # set up path to includes directory
+    include_path = os.path.join(harness_dir, INCLUDES_DIR)
+
+    # attempt compilation
+    try:
+        m = subprocess.check_output([gpp, "-o", output_wpath, 
+                                          "-I", include_path, 
+                                          file_wpath], 
+                                    stderr=subprocess.STDOUT)
+        compiled = True 
+    
+    except subprocess.CalledProcessError as e:
+        message = e.output.replace(file_path, "")
+        compiled = False
+    
+    return {"success": compiled, "message": message}
+
+
+## 
+# @brief strips the comments from a provided source file using g++ and flags
+# 
+# @param file_wpath source file with full path
+# @param harness_dir full path to harness directory
+#
+# @return a dictionary with two values. The first boolean with key success.
+#         The second key of message containing either the source code 
+#         processed and without comments or error messages from compilation
+#
+# @precondition all included files must be at base level of includes directory
+#
+def strip_comments(file_wpath, harness_dir):
+    import os
+    import subprocess
+    from system.functions import which
+   
+    # grab proper g++ command 
+    gpp = which("g++")
+
+    # pull out file path to trim any error messages to just name or local path
+    file_path = file_wpath[0:file_wpath.rfind("/")+1]
+    
+    # set up path to includes directory
+    include_path = os.path.join(harness_dir, INCLUDES_DIR)
+
+    # attempt compilation
+    try:
+        message = subprocess.check_output([gpp, "-fpreprocessed", "-dD", "-E", 
+                                          "-I", include_path, 
+                                          file_wpath], 
+                                    stderr=subprocess.STDOUT)
+        compiled = True 
+    
+    except subprocess.CalledProcessError as e:
+        message = "Stripping comments from file failed"
+        compiled = False
+ 
+    return {"success": compiled, "message": message}
 

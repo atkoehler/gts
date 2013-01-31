@@ -106,6 +106,21 @@ if source_exist:
         # add test to result
         if completed == OK:
             result.add_test(t)
+    
+    
+    name = "Compilation Check"
+    if name in config.actions:
+        # create test object
+        t = GalahTest()
+        t.name = name
+         
+        # run test
+        import modules.compilation as compilation
+        completed = compilation.test((config.testables_directory, config.harness_directory), t, source)
+#        print compilation.strip_comments(source.file_loc, config.harness_directory)["message"]
+        # add test to result
+        if completed == OK:
+            result.add_test(t)
 
 
 # calculate the scores associated with result based on tests

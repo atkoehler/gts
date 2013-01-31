@@ -7,7 +7,7 @@ class SourceFile:
         self.code = code
         self.header = header
         self.comments = comments
-        self.file_loc = file_loc  # code path joined with source file name
+        self.file_loc = file_loc # code path joined with source file name
         self.name = name
     
     # TODO: implement try block for opening file
@@ -22,7 +22,7 @@ class SourceFile:
             s = match.group(0)
             if s.startswith('/'):
                 allcomments.append(s)
-                return "" 
+                return ""
             else:
                 return s
         pattern = re.compile(
@@ -57,7 +57,7 @@ class SourceFile:
         def replacer(match):
             s = match.group(0)
             if s.startswith('/'):
-                return "" 
+                return ""
             else:
                 return s
         pattern = re.compile(

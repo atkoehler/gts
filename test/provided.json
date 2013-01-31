@@ -6,5 +6,5 @@
         "user": "akoeh001@ucr.edu",
         "timestamp": "2012-01-13-12-14-15"
         },
-"actions": ["File Name Check", "File Header Check", "Coding Style Check"]
+"actions": ["File Name Check", "File Header Check", "Coding Style Check", "Compilation Check"]
 }
