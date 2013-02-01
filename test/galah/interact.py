@@ -9,15 +9,6 @@ class GalahTestPart:
     
 
 class GalahTest:
-    def __init__(self, name="", score=0, max_score=0, message="", parts=None):
-        if parts is None:
-            parts = []
-    
-    def to_list(self):
-        return [self.name, self.score, self.max_score]
-
-
-class GalahTest:
     def __init__(self, name = "", score = 0, max_score = 0, message = "", parts = None):
         if parts is None:
             parts = []
@@ -36,16 +27,6 @@ class GalahTest:
             "message": self.message,
             "parts": [i.to_list() for i in self.parts]
         }
-    
-
-class GalahResult:
-    def __init__(self, score=0, max_score=0, tests=None):
-        if tests is None:
-            tests = []
-        
-        self.score = score;
-        self.max_score = max_score
-        self.tests = tests
     
 
 class GalahResult:
@@ -86,13 +67,15 @@ class GalahResult:
 import json
 import sys
 class GalahConfig:
-    def __init__(self, testables_dir = None, harness_dir = None,                                 submission = None, harness = None, actions = None):
+    def __init__(self, testables_dir = None, harness_dir = None,                                 submission = None, assignment = None, harness = None, 
+                 actions = None):
         if actions is None:
             actions = []
         self.testables_directory = testables_dir
         self.harness_directory = harness_dir
         self.submission = submission
         self.harness = harness
+        self.assignment = assignment
         self.actions = actions
     
     @staticmethod
@@ -104,6 +87,7 @@ class GalahConfig:
             harness_dir = values["harness_directory"],
             submission = values["raw_submission"],
             harness = values["raw_harness"],
+            assignment = values["raw_assignment"],
             actions = values["actions"]
         )
 
