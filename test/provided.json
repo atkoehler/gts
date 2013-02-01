@@ -4,10 +4,10 @@
 "raw_harness": {},
 "raw_submission": {
         "user": "akoeh001@ucr.edu",
-        "timestamp": "2013-02-10T12:45:23.0"
-        },
-"raw_assignment": {
-        "due": "2013-02-14T21:00:00.0"
+        "timestamp": "2013-02-10T12:45:23.0",
+        "assignment": {
+                        "due": "2013-02-14T21:00:00.0"
+                }
         },
 "actions": ["File Name Check", "File Header Check", "Coding Style Check", "Compilation Check", "Indent Check"]
 }
