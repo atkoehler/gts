@@ -194,3 +194,96 @@ def long_lines_check(test, source):
     
     test.score = -1 * DEDUCTION_PER_GAFFE * len(line_nums)
     return line_nums
+
+
+## 
+# @brief sub test to check whether scopes are indented
+# 
+# @param test the test part object to update with score
+# @param source the source object containing name, location and content splits
+#
+def scope_indent_check(test, source):
+    line_nums = []
+
+    # TODO implement try block
+    file = open(source.file_loc)
+    contents = file.read()
+    file.close()
+    
+    lines = contents.split("\n")
+    curlies = []
+    not_indented = []
+    for (i, line) in enumerate(lines):
+        if line.find("{") != -1:
+            if (line.lstrip().find("{") == 0):
+                first_index = line.find("{")
+            else:
+                first_index = line.find(line.lstrip()[0])
+            
+            if len(curlies) > 0:
+                if first_index <= curlies[-1][1]:
+                    not_indented.append(i)
+            curlies.append((i, first_index))
+        
+        if line.find("}") != -1:
+            if line.find("{") != -1:
+                if (line.lstrip().find("{") == 0):
+                    first_index = line.find("{")
+                else:
+                    first_index = line.find(line.lstrip()[0])           
+                alone = True
+            else:
+                first_index = line.find("}")
+                alone = (len(line.strip()) == 1)
+             
+            if len(curlies) > 0:
+                if first_index != curlies[-1][1]:
+                    not_indented.append(curlies[-1][0])
+                elif (first_index == curlies[-1][1]) and (not alone):
+                    not_indented.append(curlies[-1][0])
+                
+            curlies.pop()
+    
+    test.score = -1 * DEDUCTION_PER_GAFFE * len(not_indented)
+    return not_indented
+
+
+## 
+# @brief sub test to check whether scopes are indented the similarly
+# 
+# @param test the test part object to update with score
+# @param source the source object containing name, location and content splits
+#
+def scope_indent_similar_check(test, source):
+    spacer = 0
+    mismatched = []
+    line_nums = []
+
+    # TODO implement try block
+    file = open(source.file_loc)
+    contents = file.read()
+    file.close()
+    
+    lines = contents.split("\n")
+    curlies = []
+    not_indented = []
+    for (i, line) in enumerate(lines):
+        if line.find("{") != -1:
+            if (line.lstrip().find("{") == 0):
+                first_index = line.find("{")
+            else:
+                first_index = line.find(line.lstrip()[0])
+            
+            if len(curlies) > 0:
+                if spacer == 0:
+                    spacer = first_index - curlies[-1]
+                
+                if (first_index - curlies[-1]) != spacer:
+                    mismatched.append(i)
+            
+        if line.find("}") != -1:
+            curlies.pop()
+    
+    test.score = -1 * DEDUCTION_PER_GAFFE * len(mismatched)
+    return mistmatched
+
