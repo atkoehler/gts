@@ -63,6 +63,21 @@ if source_exist:
     ##
     # run test if it is within the configuration actions
     #
+    name = "Submit Date Check"
+    if name in config.actions:
+        # create test object
+        t = GalahTest()
+        t.name = name
+         
+        # run test
+        import modules.latecheck as latecheck
+        completed = latecheck.test((config.testables_directory, config.harness_directory), t, config.submission["timestamp"], config.assignment["due"])
+        
+        # add test to result
+        if completed == OK:
+            result.add_test(t)
+    
+    
     name = "File Name Check"
     if name in config.actions:
         # create test object
