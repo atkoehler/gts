@@ -115,7 +115,7 @@ if source_exist:
         t.name = name
          
         # run test
-        import modules.stylecheck as stylecheck
+        from modules.style import stylecheck as stylecheck
         completed = stylecheck.test((config.testables_directory, config.harness_directory), t, source)
         
         # add test to result
