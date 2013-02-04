@@ -22,6 +22,9 @@ from system.testfile import *
 # create configuration object from Galah provided JSON file
 config = GalahConfig().from_file()
 
+# TODO: should this be be within the setup of the configuration
+sys.path.append(config.harness_directory)
+
 # generic return values
 OK = 0
 ERROR = -1
