@@ -89,6 +89,29 @@ def test(locations, test_obj, source):
         else:
             test_obj.message += "\n\n" + m
     test_obj.parts.append(sub_test)
+        
+    # improper boolean conditionals exist sub test
+    import modules.style.conditionals as conditionals
+    name = "Improper conditional statements"
+    sub_test = GalahTestPart()
+    sub_test.name = name
+    nums = conditionals.improper_bool(sub_test, source)
+    m = ""
+    for i in nums:
+        m += str(i) + ", "
+    if len(nums) > 0:
+        m = m.strip().rstrip(',')
+        if len(nums) == 1:
+            m = "Found improper boolean conditional expression. Such as one that compares to true--(var_name == true)--instead of simply using the boolean value--(var_name). Improper conditionals discovered on line: " + m
+        elif len(nums) > 1:
+            m = "Found improper boolean conditional expressions. Such as one that compares to true--(var_name == true)--instead of simply using the boolean value--(var_name). Improper conditionals discovered on lines: " + m
+        if test_obj.message == "":
+            test_obj.message += m
+        else:
+            test_obj.message += "\n\n" + m
+    test_obj.parts.append(sub_test)
+
+    
     
     # TODO: Clean up.  Indentation object not really needed.  
     # Can be used internally by individual tests if required. 
@@ -139,15 +162,14 @@ def test(locations, test_obj, source):
             test_obj.message += m
         else:
             test_obj.message += "\n\n" + m
-    else:
-        if not ret:
-            m = "Failed to initialize indentation space checking due to prior errors"
+    elif not ret:
+        m = "Could not execute indentation checking due to prior style errors."
         if test_obj.message == "":
             test_obj.message += m
-        else:
+        elif m != "":
             test_obj.message += "\n\n" + m
     
-        
+     
     # impose maximum penalty if test completely failed 
     if ret:
         sub_test.score = -1 * DEDUCTION_PER_GAFFE * len(nums)
