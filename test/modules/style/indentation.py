@@ -194,7 +194,7 @@ class Indent:
             for line in level[2]:
                 if len(line.strip()) > 0 and sp != line.find(line.lstrip()[0]):
                     bad_lines.append(level[1])
-           
+        
         return (True, sorted(list(set(bad_lines))))
     
 
