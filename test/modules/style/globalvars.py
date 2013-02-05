@@ -23,7 +23,7 @@ COMPILER = "g++"
 def globals_exist(test, harness_dir, source):
     import os
     import shutil
-    from system.functions import which
+    from system.utils import which
    
     # intialize to empty list of global variables  
     vars = [] 

@@ -82,7 +82,7 @@ def test(locations, test_obj, source):
 def compile_single(file_wpath, output_wpath, harness_dir):
     import os
     import subprocess
-    from system.functions import which
+    from system.utils import which
    
     # grab proper g++ command 
     gpp = which("g++")
@@ -126,7 +126,7 @@ def compile_single(file_wpath, output_wpath, harness_dir):
 def strip_comments(file_wpath, harness_dir):
     import os
     import subprocess
-    from system.functions import which
+    from system.utils import which
    
     # grab proper g++ command 
     gpp = which("g++")
