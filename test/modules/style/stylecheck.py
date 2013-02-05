@@ -155,9 +155,9 @@ def test(locations, test_obj, source):
     if len(nums) > 0:
         m = m.strip().rstrip(',')
         if len(nums) == 1:
-            m = "Incorrect scope indentation using " + str(ind.spacing) + " spaces, scope begins on line: " + m
+            m = "Incorrect indentation using " + str(ind.spacing) + " spaces, block begins on line: " + m
         elif len(nums) > 1:
-            m = "Incorrect scope indentation using " + str(ind.spacing) + " spaces, scopes begin on lines: " + m
+            m = "Incorrect indentation using " + str(ind.spacing) + " spaces, blocks begin on lines: " + m
         if test_obj.message == "":
             test_obj.message += m
         else:
