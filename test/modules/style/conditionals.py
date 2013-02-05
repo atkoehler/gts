@@ -19,6 +19,8 @@ DEDUCTION_PER_GAFFE = 5
 # @param test the test part object to update with score
 # @param source the source object containing name, location and content splits
 #
+# @return a list containing line numbers in file that have improper conditional
+#
 def improper_bool(test, source):
     line_nums = []
     improper = ["== true", "true ==", "== false", "false =="]
