@@ -89,6 +89,27 @@ def test(locations, test_obj, source):
         else:
             test_obj.message += "\n\n" + m
     test_obj.parts.append(sub_test)
+    
+    # check for tab characters in code
+    import modules.style.tabs as tabs
+    name = "Tabs used in source"
+    sub_test = GalahTestPart()
+    sub_test.name = name
+    nums = tabs.find_tabs(sub_test, source)
+    m = ""
+    for i in nums:
+        m += str(i) + ", "
+    if len(nums) > 0:
+        m = m.strip().rstrip(',')
+        if len(nums) == 1:
+            m = "Discovered at least one tab character on line: " + m
+        elif len(nums) > 1:
+            m = "Discovered at least one tab character on lines: " + m
+        if test_obj.message == "":
+            test_obj.message += m
+        else:
+            test_obj.message += "\n\n" + m
+    test_obj.parts.append(sub_test)
         
     # improper boolean conditionals exist sub test
     import modules.style.conditionals as conditionals
