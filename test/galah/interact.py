@@ -86,7 +86,7 @@ class GalahConfig:
             testables_dir = values["testables_directory"],
             harness_dir = values["harness_directory"],
             submission = values["raw_submission"],
-            assignment = values["raw_submission"]["assignment"],
+            assignment = values["raw_assignment"],
             harness = values["raw_harness"],
             actions = values["actions"]
         )
