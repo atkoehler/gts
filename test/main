@@ -141,7 +141,7 @@ if source_exist:
             result.add_test(t)
      
      
-    name = "Indent Check"
+    name = "Indent Command Execution"
     if name in config.actions:
         # create test object
         t = GalahTest()

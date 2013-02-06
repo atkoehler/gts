@@ -9,5 +9,5 @@
                         "due": "2013-02-14T21:00:00.0"
                 }
         },
-"actions": ["Submit Date Check", "File Name Check", "File Header Check", "Coding Style Check", "Compilation Check", "Indent Check"]
+"actions": ["Submit Date Check", "File Name Check", "File Header Check", "Coding Style Check", "Compilation Check", "Indent Command Execution"]
 }

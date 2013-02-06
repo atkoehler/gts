@@ -10,7 +10,8 @@
 # TODO: grab this from configuration object/file when implemented
 WORKING_DIR_NAME = "working"
 PENALTY = 25
-
+COMPILER = "g++"
+INCLUDES_DIR = "system/includes"
 
 ## 
 # @brief test function checks file name against a required name
@@ -149,10 +150,35 @@ def indent_args(f, p, arg_list):
         made_working = True
     else:
         made_working = False
+   
     
+    # attempt compilation as compile errors may cause odd indent errors
+    # grab proper g++ command 
+    gpp = which(COMPILER)
+
+    # pull out file path to trim any error messages to just name or local path
+    file_wpath = f
+    file_path = file_wpath[0:file_wpath.rfind("/")+1]
+    
+    # set up path to includes directory
+    include_path = os.path.join(p, INCLUDES_DIR)
+    
+    # set up path to output exe
+    output_wpath = os.path.join(working_dir, "indent_compile")
+
+    # attempt compilation
+    try:
+        m = subprocess.check_output([gpp, "-o", output_wpath,
+                                          "-I", include_path,
+                                          file_wpath],
+                                    stderr=subprocess.STDOUT)
+        compiled = True
+    except subprocess.CalledProcessError as e:
+        compiled = False 
+ 
     # run indent command with subprocess module
     try:
-        command = ["indent"]
+        command = [indent]
         for arg in arg_list:
             command.append(arg)
         command.append(f)
@@ -175,7 +201,12 @@ def indent_args(f, p, arg_list):
         
     # set the return value stating the command completed   
     indented = True
- 
+
+    # didn't compile pre-pend a warning about indent error messages
+    if not compiled:
+        pre = "WARNING: Failed compilation may result in additional errors from indent command.\n\n"
+        error = pre + error
+    
     # remove the working directory if this process created it
     if made_working:
         shutil.rmtree(working_dir) 
