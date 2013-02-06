@@ -56,6 +56,7 @@ source_exist = findsource.test((config.testables_directory, config.harness_direc
 # split the file into code, header and comments
 if source_exist:
     source.split_file()
+    source.determine_indent_size()
 
 # add test to result so feedback exists stating which file was tested if any
 result.add_test(t)

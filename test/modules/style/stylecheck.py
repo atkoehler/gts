@@ -60,7 +60,8 @@ def test(locations, test_obj, source):
             else:
                 test_obj.message += "\n\n" + m
     test_obj.parts.append(sub_test)
-
+    
+    
     # comments exist sub test
     import modules.style.comments as comments
     name = "Program contains comments"
@@ -68,7 +69,8 @@ def test(locations, test_obj, source):
     sub_test.name = name
     ret = comments.comments_exist(sub_test, source)
     test_obj.parts.append(sub_test)
-
+    
+    
     # check for long lines in code
     import modules.style.linelength as linelength
     name = "Lines over " + str(LONG_LINE_COUNT) + " characters"
@@ -90,7 +92,8 @@ def test(locations, test_obj, source):
             test_obj.message += "\n\n" + m
     test_obj.parts.append(sub_test)
     
-    # check for tab characters in code
+    
+    # check for tab characters useage as indentation of code
     import modules.style.tabs as tabs
     name = "Tabs used in source"
     sub_test = GalahTestPart()
@@ -110,6 +113,7 @@ def test(locations, test_obj, source):
         else:
             test_obj.message += "\n\n" + m
     test_obj.parts.append(sub_test)
+    
         
     # improper boolean conditionals exist sub test
     import modules.style.conditionals as conditionals
@@ -131,22 +135,16 @@ def test(locations, test_obj, source):
         else:
             test_obj.message += "\n\n" + m
     test_obj.parts.append(sub_test)
-
     
     
-    # TODO: Clean up.  Indentation object not really needed.  
-    # Can be used internally by individual tests if required. 
-    # Initialize Indentation Object
-    import modules.style.indentation as indentation
-    ind = indentation.Indent()
-
     # One curly brace per line sub test
+    from modules.style import indentation as indentation
     name = "Single curly brace per line"
     sub_test = GalahTestPart()
     sub_test.name = name
     
     m = ""
-    nums = ind.one_per_level(source.file_loc)
+    nums = indentation.one_curly_per_line(source)
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
@@ -162,34 +160,34 @@ def test(locations, test_obj, source):
     sub_test.score = -1 * DEDUCTION_PER_GAFFE * len(nums)
     test_obj.parts.append(sub_test)
     
-    # Proper indentation sub test
-    name = "Proper indentation and spacing"
+    
+    # Proper spacing within indentation blocks sub test
+    from modules.style import indentation as indentation
+    name = "Proper indentation"
     sub_test = GalahTestPart()
     sub_test.name = name
     
     m = ""
-    ret = ind.init_from_file(source.file_loc)
-    (ret, nums) = ind.correct_spacing()
+    (ret, nums) = indentation.correct_indent(source)
     
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
         m = m.strip().rstrip(',')
         if len(nums) == 1:
-            m = "Incorrect indentation using " + str(ind.spacing) + " spaces, block begins on line: " + m
+            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, block begins on line: " + m
         elif len(nums) > 1:
-            m = "Incorrect indentation using " + str(ind.spacing) + " spaces, blocks begin on lines: " + m
+            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, blocks begin on lines: " + m
         if test_obj.message == "":
             test_obj.message += m
         else:
             test_obj.message += "\n\n" + m
     elif not ret:
-        m = "Could not execute indentation checking due to prior style errors."
+        m = "Could not execute indentation check due to prior style errors."
         if test_obj.message == "":
             test_obj.message += m
         elif m != "":
             test_obj.message += "\n\n" + m
-    
      
     # impose maximum penalty if test completely failed 
     if ret:
@@ -197,6 +195,8 @@ def test(locations, test_obj, source):
     else:
         sub_test.score = -1 * STYLE_PENALTY_MAX
     test_obj.parts.append(sub_test)   
+    
+    
      
     # go over test parts to calculate the style penalty
     for test in test_obj.parts:
@@ -205,7 +205,8 @@ def test(locations, test_obj, source):
     # cap style deduction
     if abs(test_obj.score) > STYLE_PENALTY_MAX:
         test_obj.score = -1 * STYLE_PENALTY_MAX
-
+    
+    # Still have a message for a perfect score
     if test_obj.score == 0:
         m = "Did not discover any style errors."
         if test_obj.message == "":

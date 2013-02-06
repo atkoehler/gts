@@ -31,3 +31,9 @@ def which(program):
     
     return None
 
+def expand_all_tabs(lines, tab_size):
+    "Expand all tabs in all lines provided, updates provided lines"
+    
+    for (i, line) in enumerate(lines):
+        lines[i] = line.expandtabs(tab_size)
+

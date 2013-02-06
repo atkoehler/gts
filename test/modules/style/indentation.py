@@ -3,198 +3,171 @@
 # @author Adam Koehler
 # @date February 2, 2013
 #
-# @brief Provides class for checking indentation on a file
+# @brief Provides module for checking indentation and single curly per line
 #
 
 # TODO: figure out the configuration system to get this item from their
 DEFAULT_SPACING = 3
+MIN_SPACING = 2
+MAX_SPACING = 6
 
-class Indent:
-    def __init__(self, levels = [], spacing = DEFAULT_SPACING, one_per = False):
-        """
-        Indentation class allows set up of lines for calculating multiple
-        tests. First test that propes all curly braces are on own lines
-        is a prerequisite for all indentation tests.
-         
-        Levels contains a list of tuples with each tuple contain three items.
-        ([1, 2, 3], [1, 2, 3]...) 
-            '1' is the level of indentation, level * spacing is column 0 offset
-            '2' is the line number the level begins on
-            '3' is a list of lines contained within the level       
 
-        Spacing is the spacing increase per level and one_per is a boolean flag
-        stating whether the one curly brace per line test was passed.
-        
-        """
-        
-        self.levels = levels
-        self.spacing = spacing
-        self.one_per = one_per
+class Block:
+    """
+    Simple class that contains the properties of a indentation block.
+    The level is utilized the calculate the proper amount of spacing for lines
+    contained within the indentation block (level * source.indent_size). Lines
+    contains all the lines within this indentation block.
+    """
     
-    def init_from_file(self, file_loc):
-        """
-        Initializes the member variables from a file. 
+    def __init__(self, level = 0, start_line = 1, lines = None):
+        if lines is None:
+            lines = []
         
-        """
-        
-        if not self.one_per:
-            return False
-        
-        indeces = []
-        
-        # TODO implement try block
-        f = open(file_loc)
-        contents = f.read()
-        f.close()
-       
-        # global level 
-        level = 0
-        begin = 1
-        self.levels.append((level, begin, []))
-        indeces.append(0)
-        
-        # attempt to determine the spacing per level
-        spaces = self.per_level_spacing(contents)
-        if spaces == 0:
-            self.spacing = DEFAULT_SPACING
-        else:
-            self.spacing = spaces
-       
-        # loop over all the lines in the file splitting up levels
-        file_lines = contents.split("\n")
-        for (i, line) in enumerate(file_lines):
-            # determine if end of level exists on line
-            if line.find("}") != -1:
-                # make sure not to pop global off in case of mismatch braces
-                if len(indeces) > 1:
-                    # only pop if belong within indent level one up
-                    if line.lstrip().find("}") == 0:
-                        indeces.pop()
-                        popped = True
+        self.level = level
+        self.start_line = start_line
+        self.lines = lines
+    
 
-            # add line to current level
-            cur = indeces[-1]
-            self.levels[cur][2].append(line)
+##
+# @brief function determines if the spacing of all lines within the various
+#        indentation blocks are correct. 
+#
+#        Currently uses the create_levels function and the one_curly_per_line
+#        function as the single curly restraint is necessary at the time for
+#        proper block initialization.
+#
+# @param source the source object containing name, location and other members
+#
+# @return tuple containing True/False and list of line numbers where each
+#         number is the start of an incorrectly spaced indentation block
+#
+def correct_indent(source):
+    """
+    Go through the lines in each level and determine if spacing is correct.
+    
+    """
+    
+    bad_lines = []
 
-            # determine if new level needs to be created
-            if line.find("{") != -1:
-                # create a new object for discovered level
-                level = self.levels[indeces[-1]][0] + 1
-                begin = i+1 #self.levels[cur][1] + self.spacing
-                
-                # updated lists of objects and indeces
-                indeces.append(len(self.levels))
-                self.levels.append((level, begin, []))
+    # Verify one curly brace per line
+    l = one_curly_per_line(source)
+
+    # Correct spacing is dependent on other style tests passing
+    if source.style_halt:
+        return (False, [])
+    
+    # Create a list of indentation blocks
+    (ret, blocks) = create_blocks(source)
+    
+    # False value indicates error in levels creation, test fails
+    if not ret:
+        return (False, [])
+    
+    for cur_block in blocks:
+        sp = cur_block.level * source.indent_size
+        for line in cur_block.lines:
+            if len(line.strip()) > 0 and sp != line.find(line.lstrip()[0]):
+                bad_lines.append(cur_block.start_line)
+    
+    # test completed and return list of lines where bad indent blocks start
+    return (True, sorted(list(set(bad_lines))))
+
+
+##
+# @brief create a list of indentation Block objects from source
+#
+# @param source the source object containing name, location and other members
+# @return a list of levels as defined in the expanded brief
+#    
+def create_blocks(source):
+    """
+    Create a list of levels, each level contains all lines in file for that
+    level indentation block. 
+    
+    """
+    from system.utils import expand_all_tabs
+     
+    # Indentation is dependent on other the absence of other style problems
+    if source.style_halt:
+        return (False, [])
+    
+    indeces = []
+    blocks = []
+    
+    # TODO implement try block
+    f = open(source.file_loc)
+    contents = f.read()
+    f.close()
+   
+    # global level 
+    level = 0
+    begin = 1
+    blocks.append(Block(level, begin))
+    indeces.append(0)
+    
+     
+    # loop over all the lines in the file splitting up levels
+    file_lines = contents.split("\n")
+    expand_all_tabs(file_lines, source.indent_size)
+    for (i, line) in enumerate(file_lines):
+        # determine if end of level exists on line
+        if line.find("}") != -1:
+            # make sure not to pop global off in case of mismatch braces
+            if len(indeces) > 1:
+                # only pop if belong within indent level one up
+                if line.lstrip().find("}") == 0:
+                    indeces.pop()
+                    popped = True
+
+        # add line to current level
+        cur = indeces[-1]
+        blocks[cur].lines.append(line)
+
+        # determine if new level needs to be created
+        if line.find("{") != -1:
+            # create a new object for discovered level
+            level = blocks[cur].level + 1
+            begin = i+1 
             
-            # determine if end of level exists on line and haven't popped
-            if line.find("}") != -1 and not popped:
-                # make sure not to pop global in case of mismatch braces
-                if len(indeces) > 1:
-                    indeces.pop()                  
-            
-            popped = False
+            # update lists of tuples and indeces
+            indeces.append(len(blocks))
+            blocks.append(Block(level, begin))
         
-        return len(self.levels) != 0
+        # determine if end of level exists on line and haven't popped
+        if line.find("}") != -1 and not popped:
+            # make sure not to pop global in case of mismatch braces
+            if len(indeces) > 1:
+                indeces.pop()                  
+        
+        popped = False
     
-    
-    def print_levels(self):
-        for level in self.levels:
-            print "Contained in level", level[0], "starting at line", level[1]
-            for line in level[2]:
-                print line
-        
-    def per_level_spacing(self, contents):
-        """
-        Attempts to determine the spacing per indentation level from contents
-        of file.read().
-        
-        """
-        
-        spacer = 0
-        
-        lines = contents.split("\n")
-        for (i, line) in enumerate(lines):
-            if line.find("{") != -1:
-                if (line.lstrip().find("{") == 0):
-                    first_index = line.find("{")
-                else:
-                    first_index = line.find(line.lstrip()[0])
-               
-                if line.find("}") == -1: 
-                    non_blank = self.next_non_blank(lines, i+1)
-                    spacer = self.indent_amount(lines, non_blank, first_index)
-                    if spacer > 0:
-                        break   
-                    else:
-                         spacer = 0
-        
-        return spacer
-    
-    def indent_amount(self, lines, i, prev_indent_amt):
-        """
-        Determines the indentation amount in comparison to previous amount.
-        
-        """
-        
-        if i < len(lines) and len(lines[i].strip()) > 0:
-            indent_amt = lines[i].find(lines[i].strip()[0])
-        else:
-            indent_amt = 0
-       
-        return indent_amt - prev_indent_amt
-    
-    def next_non_blank(self, lines, i):
-        """
-        Acquires the index of the next non-blank line.
-        
-        """
-        
-        while i < len(lines) and len(lines[i].strip()) == 0:
-            i = i + 1
-        return i
-    
-    def one_per_level(self, file_loc):
-        """
-        Determines if one curly brace exists per line
-        
-        """
-        
-        bad_lines = []
-        
-        # TODO: implement try block
-        contents = open(file_loc).read()
+    return (len(blocks) != 0, blocks)
 
-        # create list of line numbers where multiple braces exist
-        lines = contents.split('\n')
-        for (i, line) in enumerate(lines):
-            if (line.count("{") > 1) or (line.count("}") > 1):
-                bad_lines.append(i)
-            elif (line.count("{") == 1) and (line.count("}") == 1):
-                bad_lines.append(i)
+    
+def one_curly_per_line(source):
+    """
+    Determines if one curly brace exists per line
+    
+    """
+    
+    bad_lines = []
+    
+    # TODO: implement try block
+    contents = open(source.file_loc).read()
 
-        if len(bad_lines) > 0:
-            self.one_per = False
-        else:
-            self.one_per = True
-        
-        return bad_lines
+    # create list of line numbers where multiple braces exist
+    lines = contents.split('\n')
+    for (i, line) in enumerate(lines):
+        num_braces = line.count("{") + line.count("}")
+        if num_braces > 1:
+            bad_lines.append(i)
+   
+    # not having a single curly per line halts certain style checks 
+    if len(bad_lines) > 0:
+        source.style_halt = True
     
-    def correct_spacing(self):
-        """
-        Go through the lines on each level and determine if spacing is correct.
-        
-        """
-        
-        bad_lines = []
-        if self.spacing == 0 or len(self.levels) == 0:
-            return (False, [])
-        
-        for level in self.levels:
-            sp = level[0] * self.spacing
-            for line in level[2]:
-                if len(line.strip()) > 0 and sp != line.find(line.lstrip()[0]):
-                    bad_lines.append(level[1])
-        
-        return (True, sorted(list(set(bad_lines))))
-    
+    return bad_lines
+
+
 
