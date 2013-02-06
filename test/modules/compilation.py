@@ -85,7 +85,7 @@ def compile_single(file_wpath, output_wpath, harness_dir):
     from system.utils import which
    
     # grab proper g++ command 
-    gpp = which("g++")
+    gpp = which(COMPILER)
 
     # set up successful message
     message = "Compiled successfully"     
@@ -129,7 +129,7 @@ def strip_comments(file_wpath, harness_dir):
     from system.utils import which
    
     # grab proper g++ command 
-    gpp = which("g++")
+    gpp = which(COMPILER)
 
     if gpp is None:
         message = "g++ compiler not found, could not strip comments"
