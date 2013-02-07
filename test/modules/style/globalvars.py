@@ -43,32 +43,35 @@ def globals_exist(test, harness_dir, source):
     
     FNULL = open(os.devnull, 'w')
     try:
-        import subprocess
+        from system.utils import check_call
 
         # compile the object file
         object_file = source.name[0:source.name.find(".")] + ".o"
         obj_loc = os.path.join(working_dir, object_file)
-        subprocess.check_call([gpp, "-o", obj_loc, source.file_loc], 
-                              stdout=FNULL, stderr=subprocess.STDOUT)
+        cmd = " ".join([gpp, "-o", obj_loc, source.file_loc])
+        check_call([gpp, "-o", obj_loc, source.file_loc], 
+                   stdout=FNULL, stderr=FNULL)
+        
         # get object symbols
         symf = os.path.join(working_dir, "symbols.txt")
+        cmd = " ".join([nm, obj_loc])
         with open(symf, 'w') as sym_file:
-            subprocess.check_call([nm, obj_loc], stdout=sym_file, stderr=FNULL)
+            check_call([nm, obj_loc], stdout=sym_file, stderr=FNULL)
         
         # grep for proper symbols relating to global variables
         grepf = os.path.join(working_dir, "grep.txt")
+        cmd = " ".join([grep, "[0-9A-Fa-f]* [BCDGRS]"])
         with open(symf, 'r') as sym_file:
             with open(grepf, 'w') as grep_file:
-                subprocess.check_call([grep, "[0-9A-Fa-f]* [BCDGRS]"], 
-                               stdin=sym_file, stdout=grep_file, stderr=FNULL)
+                check_call([grep, "[0-9A-Fa-f]* [BCDGRS]"], 
+                           stdin=sym_file, stdout=grep_file, stderr=FNULL)
         
         # cut off the variable names
         cutf = os.path.join(working_dir, "cut.txt")
         with open(grepf, 'r') as grep_file:
             with open(cutf, 'w') as cut_file:
-                del_opt = "-d ' '"
-                subprocess.check_call([cut, "-d", " ", "-f" "3"],
-                               stdout=cut_file, stdin=grep_file, stderr=FNULL)
+                check_call([cut, "-d", " ", "-f" "3"], 
+                           stdout=cut_file, stdin=grep_file, stderr=FNULL)
         
         # split the global variables into a list, exclude vars starting with _
         contents = open(cutf).read().rstrip().rstrip('\n').split("\n")
@@ -76,7 +79,7 @@ def globals_exist(test, harness_dir, source):
             if val[0] != '_':
                 vars.append(val)
     
-    except subprocess.CalledProcessError as e:
+    except SystemError:
     # TODO: determine what to do in except clause, outputing error cause issue?
         FNULL.close()
         shutil.rmtree(working_dir)
