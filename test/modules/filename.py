@@ -29,6 +29,8 @@ def test(locations, test_obj):
     if not os.path.isfile(main_path):
         test_obj.score = -1 * PENALTY
         test_obj.message = "File name not " + PROPER_FILE_NAME
-
+    else
+        test_obj.message = "Discoverd properly named file"
+    
     return OK
 
