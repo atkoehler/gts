@@ -88,7 +88,6 @@ class GalahConfig:
             submission = values["raw_submission"],
             assignment = values["raw_assignment"],
             harness = values["raw_harness"],
-            actions = values["actions"]
         )
 
 
