@@ -204,6 +204,12 @@ def test(locations, test_obj, source):
     
     # cap style deduction
     if abs(test_obj.score) > STYLE_PENALTY_MAX:
+        m = "Penalty of " + str(abs(test_obj.score)) + " exceeds maximum " \
+            "penalty of " + str(STYLE_PENALTY_MAX) + ", assessing maximum."
+        if test_obj.message == "":
+            test_obj.message = m + test_obj.message
+        else:
+            test_obj.message = m + "\n\n" + test_obj.message
         test_obj.score = -1 * STYLE_PENALTY_MAX
     
     # Still have a message for a perfect score
