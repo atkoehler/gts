@@ -25,11 +25,18 @@ def test(locations, test_obj, submit_date, due_date):
     OK = 0
     from datetime import datetime
 
-    # format string from datetime.isoformat()
-    f = "%Y-%m-%dT%H:%M:%S.%f"
+    # format string from datetime.isoformat() may be without microseconds
+    if submit_date.find('.') == -1:
+        sdf = "%Y-%m-%dT%H:%M:%S"
+    else:
+        sdf = "%Y-%m-%dT%H:%M:%S.%f"
+    if due_date.find('.') == -1:
+        ddf = "%Y-%m-%dT%H:%M:%S"
+    else:
+        ddf = "%Y-%m-%dT%H:%M:%S.%f"
 
     # check if submission took place prior to deadline    
-    if datetime.strptime(submit_date, f) < datetime.strptime(due_date, f):
+    if datetime.strptime(submit_date, sdf) < datetime.strptime(due_date, ddf):
         test_obj.message = "Submitted before the deadline."
     else:
         test_obj.score = -1 * LATE_PENALTY
