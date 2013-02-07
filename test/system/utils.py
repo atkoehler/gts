@@ -64,3 +64,15 @@ def check_call(*args, **kwargs):
         raise SystemError((returnValue, str(args[0])))
     else:
         return 0
+
+def markup_convert_newline(line):
+    "Convert solitary newlines in string to markup format"
+    
+    line_split = line.split('\n')
+    for (i, ind_line) in enumerate(line_split):
+        if len(ind_line) > 0:
+            if i+1 < len(line_split) and len(line_split[i+1]):
+                line_split[i] = ind_line + "  "
+    
+    return "\n".join(line_split)
+

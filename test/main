@@ -168,5 +168,12 @@ result.calculate_scores()
 if result.score < 0:
     result.score = 0
 
+# TODO: should markup conversion occur all at once?
+# convert all test messages to have proper markdown for newlines
+from system.utils import markup_convert_newline
+for test in result.tests:
+    test.message = markup_convert_newline(test.message)
+    
+
 # send result back to Galah 
 result.send()
