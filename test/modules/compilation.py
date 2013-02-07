@@ -82,8 +82,12 @@ def test(locations, test_obj, source):
 def compile_single(file_wpath, output_wpath, harness_dir):
     import os
     import subprocess
-    from system.utils import which
-   
+    import shutil
+    from system.utils import which, check_call
+
+    # Open /dev/null for dismissing errors or output    
+    nullFile = open(os.devnull, 'w')
+
     # grab proper g++ command 
     gpp = which(COMPILER)
 
@@ -95,18 +99,35 @@ def compile_single(file_wpath, output_wpath, harness_dir):
     
     # set up path to includes directory
     include_path = os.path.join(harness_dir, INCLUDES_DIR)
-
+    
+    # check if working directory exists, if not make one
+    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
+    if not os.path.exists(working_dir):
+        os.mkdir(working_dir)
+        made_working = True
+    else:
+        made_working = False
+    
+    
+    err_file_path = os.path.join(working_dir, "errors.txt")
     # attempt compilation
     try:
-        m = subprocess.check_output([gpp, "-o", output_wpath, 
-                                          "-I", include_path, 
-                                          file_wpath], 
-                                    stderr=subprocess.STDOUT)
+        with open(err_file_path, 'w') as errFile:
+            r = check_call([gpp, "-o", output_wpath, 
+                           "-I", include_path, file_wpath],
+                           stdout=nullFile, stderr=errFile)
         compiled = True 
     
-    except subprocess.CalledProcessError as e:
-        message = e.output.replace(file_path, "")
+    except SystemError:
+        # grab the errors from the error file then eliminate it
+        message = open(err_file_path).read().replace(file_path, "")
         compiled = False
+    
+    # remove the working directory if function created it
+    if made_working:
+        shutil.rmtree(working_dir)    
+    elif os.path.isfile(err_file_path):
+        os.remove(err_file_path)
     
     return {"success": compiled, "message": message}
 
@@ -126,6 +147,7 @@ def compile_single(file_wpath, output_wpath, harness_dir):
 def strip_comments(file_wpath, harness_dir):
     import os
     import subprocess
+    import shutil
     from system.utils import which
    
     # grab proper g++ command 
@@ -141,21 +163,35 @@ def strip_comments(file_wpath, harness_dir):
     
     # set up path to includes directory
     include_path = os.path.join(harness_dir, INCLUDES_DIR)
-
-    # attempt compilation
-    try:
-        message = subprocess.check_output([gpp, "-fpreprocessed", "-E", 
-                                          "-I", include_path, 
-                                          file_wpath], 
-                                    stderr=subprocess.STDOUT)
-        compiled = True 
     
-    except subprocess.CalledProcessError as e:
+    # check if working directory exists, if not make one
+    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
+    if not os.path.exists(working_dir):
+        os.mkdir(working_dir)
+        made_working = True
+    else:
+        made_working = False
+ 
+    # attempt to compiler preprocessor to strip comments
+    try:
+        out_file_path = os.path.join(working_dir, "out.txt")
+        
+        with open(out_file_path, 'w') as outFile:
+            r = check_output([gpp, "-fpreprocessed", "-E", 
+                               "-I", include_path, file_wpath], 
+                               stdout=outFile, stderr=nullFile)
+        compiled = True 
+        message = open(out_file_path).read() 
+    except SystemError:
         message = "Stripping comments from file failed"
         compiled = False
     
     if compiled:
         message = message[message.find("\n"):] 
     
+    # remove the working directory if function created it
+    if made_working:
+        shutil.rmtree(working_dir)    
+
     return {"success": compiled, "message": message}
 

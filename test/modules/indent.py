@@ -48,7 +48,7 @@ def test(locations, test_obj, source):
         test_obj.message = ret_val["errors"]
         test_obj.score = -1 * PENALTY
     else:
-        test_obj.message = "indent executed without errors"
+        test_obj.message = "indent command executed without errors"
     
     # remove the working directory if this function created it
     if made_working:
@@ -81,10 +81,8 @@ def indent_file(source_wpath, harness_path, preset = None, arguments = None):
     elif preset == "BSD":
         ret_val = preset_bsd(source_wpath, harness_path, arguments)
     else:
-        indented = False
         message = "Invalid preset value: " + str(preset)
-        error = None
-        ret_val = {"success": indented, "message": message, "errors": error}
+        ret_val = {"success": False, "message": message, "errors": None}
     
     return ret_val
 
@@ -126,7 +124,7 @@ def indent_args(f, p, arg_list):
     import os
     import subprocess  
     import shutil
-    from system.utils import which
+    from system.utils import which, check_call
     
     indented = False
     message = "Could not indent the file"
@@ -165,30 +163,38 @@ def indent_args(f, p, arg_list):
     
     # set up path to output exe
     output_wpath = os.path.join(working_dir, "indent_compile")
-
+    
+    # open /dev/null for dismissing output or errors
+    nullFile = open(os.devnull, 'w')
+    
     # attempt compilation
     try:
-        m = subprocess.check_output([gpp, "-o", output_wpath,
-                                          "-I", include_path,
-                                          file_wpath],
-                                    stderr=subprocess.STDOUT)
-        compiled = True
-    except subprocess.CalledProcessError as e:
-        compiled = False 
- 
-    # run indent command with subprocess module
+        r = check_call([gpp, "-o",output_wpath, "-I", include_path, file_wpath],
+                       stdout=nullFile, stderr=nullFile)
+        compiled = True 
+    except SystemError:
+        compiled = False
+    
+    
+    errf = os.path.join(working_dir, "indent_errors.txt")
+    indentf = os.path.join(working_dir, "indent_out.cpp")
     try:
         command = [indent]
         for arg in arg_list:
             command.append(arg)
         command.append(f)
         
-        errf = os.path.join(working_dir, "indent_errors.txt")
+        # run indent command 
         with open(errf, 'w') as err_file:
-            message = subprocess.check_output(command, stderr=err_file)
-    except subprocess.CalledProcessError as e:
-        message = e.output
-    
+            with open(indentf, 'w') as indentFile:
+                r = check_call(command, stdout=indentFile, stderr=err_file)
+        message = open(indentf).read()
+    except SystemError:
+        message = open(indentf).read()
+   
+    # Indent always does something even when errors exist
+    indented = True
+
     # determine if error messages exist
     with open(errf, 'r') as err_file:
         error = err_file.read()
@@ -199,9 +205,6 @@ def indent_args(f, p, arg_list):
         error = error.replace("\n\n", "\n")
         error = error.strip()
         
-    # set the return value stating the command completed   
-    indented = True
-
     # didn't compile pre-pend a warning about indent error messages
     if not compiled:
         pre = "WARNING: Failed compilation may result in additional errors from indent command.\n\n"
@@ -210,7 +213,7 @@ def indent_args(f, p, arg_list):
     # remove the working directory if this process created it
     if made_working:
         shutil.rmtree(working_dir) 
-    else:
+    elif os.path.isfile(errf):
         os.remove(errf)
 
     return {"success": indented, "message": message, "errors": error}
