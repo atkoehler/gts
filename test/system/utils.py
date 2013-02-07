@@ -56,12 +56,9 @@ def expand_all_tabs(lines, tab_size):
 
 
 def check_call(*args, **kwargs):
-    """
-    Essentially subprocess.check_call for compatibility reasons.
-    Common usage: check_call(command, stdout = file_obj, stderr = file_obj).
+    "Essentially subprocess.check_call for compatibility reasons."
     
-    """
-
+    import subprocess
     returnValue = subprocess.call(*args, **kwargs)
     if returnValue != 0:
         raise SystemError((returnValue, str(args[0])))
