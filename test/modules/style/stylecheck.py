@@ -175,9 +175,9 @@ def test(locations, test_obj, source):
     if len(nums) > 0:
         m = m.strip().rstrip(',')
         if len(nums) == 1:
-            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, block begins on line: " + m
+            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, block begins after line: " + m
         elif len(nums) > 1:
-            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, blocks begin on lines: " + m
+            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, blocks begin after lines: " + m
         if test_obj.message == "":
             test_obj.message += m
         else:
