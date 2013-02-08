@@ -22,7 +22,7 @@ PENALTY = 25
 INCLUDES_DIR = "system/includes"
 
 ## 
-# @brief test function checks various style parts for the program
+# @brief test function checks compilation of the program
 # 
 # @param locations tuple (location of code, location of harness)
 # @param test_obj the test object containing properties to fill out
@@ -41,6 +41,7 @@ def test(locations, test_obj, source):
     working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
+        made_working = True
     
     
     # set up compiler error text file path
@@ -59,9 +60,10 @@ def test(locations, test_obj, source):
     if not ret_val["success"]:
         test_obj.score = -1 * PENALTY
     
-    # remove the working directory
-    import shutil
-    shutil.rmtree(working_dir)    
+    # remove the working directory if made it
+    if made_working:
+        import shutil
+        shutil.rmtree(working_dir)    
     
     return OK
 
