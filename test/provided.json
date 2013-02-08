@@ -3,11 +3,11 @@
 "harness_directory": "/home/csgrads/akoeh001/git/gts/test",
 "raw_harness": {},
 "raw_submission": {
-        "user": "akoeh001@ucr.edu",
+        "user": "akoeh001@cs.ucr.edu",
         "timestamp": "2013-02-17T12:45:23"
         },
 "raw_assignment": {
-                "due": "2013-02-14T21:00:00"
+                "due": "2013-02-21T21:00:00"
         },
 "actions": ["Submit Date Check", "File Name Check", "File Header Check", "Coding Style Check", "Compilation Check", "Indent Command Execution"]
 }
