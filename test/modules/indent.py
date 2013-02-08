@@ -47,6 +47,8 @@ def test(locations, test_obj, source):
     if not ret_val["errors"] is None:
         test_obj.message = ret_val["errors"]
         test_obj.score = -1 * PENALTY
+    elif not ret_val["success"]:
+        test_obj.message = ret_val["message"]
     else:
         test_obj.message = "indent command executed without errors"
     
