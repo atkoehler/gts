@@ -18,14 +18,17 @@ LONG_LINE_COUNT = 80
 # @param source the source object containing name, location and content splits
 #
 def long_check(test, source):
+    from system.utils import expand_all_tabs
+    
     line_nums = []
-
+    
     # TODO implement try block
     file = open(source.file_loc)
     contents = file.read()
     file.close()
 
     lines = contents.split("\n")
+    expand_all_tabs(lines, source.indent_size)
     for (i, line) in enumerate(lines):
         if len(line) > LONG_LINE_COUNT:
             line_nums.append(i+1)
