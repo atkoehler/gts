@@ -64,7 +64,7 @@ def test(locations, test_obj, source):
     
     # comments exist sub test
     import modules.style.comments as comments
-    name = "Program contains comments"
+    name = "Comments exist in source code"
     sub_test = GalahTestPart()
     sub_test.name = name
     ret = comments.comments_exist(sub_test, source)
@@ -73,7 +73,7 @@ def test(locations, test_obj, source):
     
     # check for long lines in code
     import modules.style.linelength as linelength
-    name = "Lines over " + str(LONG_LINE_COUNT) + " characters"
+    name = "No lines over " + str(LONG_LINE_COUNT) + " characters"
     sub_test = GalahTestPart()
     sub_test.name = name
     nums = linelength.long_check(sub_test, source)
@@ -95,7 +95,7 @@ def test(locations, test_obj, source):
     
     # check for tab characters useage as indentation of code
     import modules.style.tabs as tabs
-    name = "Tabs used in source"
+    name = "No tabs used in source"
     sub_test = GalahTestPart()
     sub_test.name = name
     nums = tabs.find_tabs(sub_test, source)
@@ -117,7 +117,7 @@ def test(locations, test_obj, source):
         
     # improper boolean conditionals exist sub test
     import modules.style.conditionals as conditionals
-    name = "Improper conditional statements"
+    name = "No improper conditional statements"
     sub_test = GalahTestPart()
     sub_test.name = name
     nums = conditionals.improper_bool(sub_test, source)
@@ -139,7 +139,7 @@ def test(locations, test_obj, source):
     
     # One curly brace per line sub test
     from modules.style import indentation as indentation
-    name = "Single curly brace per line"
+    name = "Source has a single curly brace per line"
     sub_test = GalahTestPart()
     sub_test.name = name
     
@@ -163,7 +163,7 @@ def test(locations, test_obj, source):
     
     # Proper spacing within indentation blocks sub test
     from modules.style import indentation as indentation
-    name = "Proper indentation"
+    name = "Indentation blocks spaced properly"
     sub_test = GalahTestPart()
     sub_test.name = name
     
