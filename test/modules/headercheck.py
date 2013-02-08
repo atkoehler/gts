@@ -52,41 +52,35 @@ def test(locations, test_obj, source, submission):
     for (i, line) in enumerate(source.header):
         # author email check
         if line.lower().find(AUTHOR_TAG.lower()) != -1:
-            sub_test = GalahTestPart()
-            sub_test.name = "Compare author and submission email"
-            
-            if not verify_email(sub_test, submission["user"], line):
+            if not verify_email(submission["user"], line):
                 m = "Email in author line does not match submission email"
-                if test_obj.message == "":
-                    test_obj.message += m
-                else:
-                    test_obj.message += "\n\n" + m
-            test_obj.parts.append(sub_test)
-            del(sub_test)
+                test_obj.score = -1 * PENALTY
+            else:
+                m = "Email in author line matches submission email"
+            if test_obj.message == "":
+                test_obj.message += m
+            else:
+                test_obj.message += "\n\n" + m
+        
          
         # anti-plagiarism lines check
         if line.lower().find(PLAGIARISM_TAG.lower()) != -1:
-            sub_test = GalahTestPart()
-            sub_test.name = "Plagiarism Section existence and wording"
-            
             if i+2 >= len(source.header):
-                sub_test.score = -1
                 m = "Could not find anti-plagiarism lines"
-                if test_obj.message == "":
-                    test_obj.message += m
-                else:
-                    test_obj.message += "\n\n" + m
+                test_obj.score = -1 * PENALTY
             else:
-                if not check_plagiarism(sub_test, [source.header[i+1], source.header[i+2]]):
+                plag_lines = [source.header[i+1], source.header[i+2]]
+                if not check_plagiarism(plag_lines):
                     m = "Incorrect wording for anti-plagiarism lines"
-                    if test_obj.message == "":
-                        test_obj.message += m
-                    else:
-                        test_obj.message += "\n\n" + m
-            
-            test_obj.parts.append(sub_test)
-            del(sub_test)
+                    test_obj.score = -1 * PENALTY
+                else:
+                    m = "Discovered proper anti-plagiarism lines"
+            if test_obj.message == "":
+                test_obj.message += m
+            else:
+                test_obj.message += "\n\n" + m
         
+            
         # flags for beginning and ending of assignment header 
         if line.lower().find(BEGIN_HDR_FLAG.lower()) != -1:
             found_begin = True
@@ -95,25 +89,15 @@ def test(locations, test_obj, source, submission):
             found_end = True
 
     # assignment header begin and end lines exist        
-    sub_test = GalahTestPart()
-    sub_test.name = "Begin/End line existence"
     if not found_end or not found_begin:
-        sub_test.score = -1
-        m = "Did not find begin or end line"
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
-    
-    test_obj.parts.append(sub_test)
-    del(sub_test)
-
-    # go over test parts, if one failed apply penalty
-    for test in test_obj.parts:
-        if test.score != test.max_score:
-            test_obj.score = -1 * PENALTY
-            break
-        
+        m = "Did not find begin or end line within the assignment header."
+        test_obj.score = -1 * PENALTY
+    else:
+        m = "Discovered beginning and ending of assignment header."
+    if test_obj.message == "":
+        test_obj.message = m + test_obj.message
+    else:
+        test_obj.message = m + "\n\n" + test_obj.message
     
     return OK
 
@@ -122,13 +106,12 @@ def test(locations, test_obj, source, submission):
 # @brief sub test for the header check to verify email in header against the
 #        the email of the submitter
 # 
-# @param test the test part object to update with score
 # @param email the email from the submission object provided to test harness
 # @param line the line in header to acquire an email from use for comparison
 #
 # @return True if the emails match, otherwise False
 #
-def verify_email(test, email, line):
+def verify_email(email, line):
     line_email = ""
     
     # attempt to discover email using @ symbol
@@ -137,10 +120,6 @@ def verify_email(test, email, line):
         if val.find(AUTHOR_TAG.lower()) == -1 and val.find("@") != -1:
             line_email = val.replace("[","").replace("]","").replace("<","").replace(">","")
         
-    
-    if line_email.lower() != email.lower():
-        test.score = -1
-    
     return line_email.lower() == email.lower()
 
 
@@ -148,19 +127,15 @@ def verify_email(test, email, line):
 # @brief sub test for the header check to verify contents of the 
 #        anti-plagiarism lines
 # 
-# @param test the test part object to update with score
 # @param lines a list of lines in the header that contain anti-plagiarism lines
 #
 # @return True if the anti-plagiarism wording matches, otherwise False
 #
-def check_plagiarism(test, lines):
+def check_plagiarism(lines):
     for (i, line) in enumerate(lines):
         lines[i] = line.replace("/","").lstrip().rstrip()
     check_line = " ".join(lines)
     
-    if check_line.lower() != PLAGIARISM_LINE.lower():
-        test.score = -1
-
     return check_line.lower() == PLAGIARISM_LINE.lower()
 
 
