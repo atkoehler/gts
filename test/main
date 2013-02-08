@@ -62,7 +62,7 @@ if source_exist:
 result.add_test(t)
 
 # TODO: remove this list creation once actions are activated in Galah
-config.actions = ["Submit Date Check", "File Name Check", "File Header Check", "Coding Style Check", "Compilation Check", "Indent Command Execution"]
+config.actions = ["Submit Date Check", "File Name Check", "File Header Check", "Coding Style Check", "Compilation Check", "Functions Unit Test"]
 
 # nothing can be done if no source file was discovered
 if source_exist: 
@@ -157,6 +157,27 @@ if source_exist:
         # add test to result
         if completed == OK:
             result.add_test(t)
+    
+    name = "Functions Unit Test"
+    if name in config.actions:
+        functions = ["monthConvert", "dayConvert", "yearConvert", "dateConvert"]
+               
+        for (i, fn) in enumerate(functions):
+            # create test object
+            t = GalahTest()
+            t.name = fn + " unit test"
+            if i % 2 == 0:
+                t.max_score = 1
+            else:
+                t.max_score = 2
+         
+            # run test
+            import modules.unittest as unittest
+            completed = unittest.test((config.testables_directory, config.harness_directory), t, source, fn)
+        
+            # add test to result
+            if completed == OK:
+                result.add_test(t)
     
 
 
