@@ -15,19 +15,14 @@ void testDateConvert(std::ofstream &harnessOutput)
     {
         if (answers[i] != dateConvert(queries[i]))
         {
-            harnessOutput.width(40);
             harnessOutput << "Calling dateConvert(\"" + queries[i] + "\")";
+            harnessOutput << "\t";
             
-            harnessOutput.width(17);
             harnessOutput << "Expected Result: ";
-
-            harnessOutput.width(25);
             harnessOutput << answers[i];
+            harnessOutput << "\t";
 
-            harnessOutput.width(10);
             harnessOutput << "Received: ";
-
-            harnessOutput.width(25);
             harnessOutput << dateConvert(queries[i]) << std::endl;
         }
     }

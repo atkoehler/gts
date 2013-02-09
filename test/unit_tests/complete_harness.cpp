@@ -11,38 +11,28 @@ void testMonthConvert(std::ofstream &harnessOutput)
         std::string s = strm.str();
         if (answers[i-1] != monthConvert(s))
         {
-            harnessOutput.width(40);
             harnessOutput << "Calling monthConvert(\"" + s + "\")";
+            harnessOutput << "\t";
 
-            harnessOutput.width(17);
             harnessOutput << "Expected Result: ";
-
-            harnessOutput.width(20);
             harnessOutput << answers[i-1];
+            harnessOutput << "\t";
 
-            harnessOutput.width(10);
             harnessOutput << "Received: ";
-            
-            harnessOutput.width(20);
             harnessOutput << monthConvert(s) << std::endl;
         }
     }
     std::string s = "0";
     if (invalid != monthConvert(s))
     {
-        harnessOutput.width(40);
         harnessOutput << "Calling monthConvert(\"" + s + "\")";
+        harnessOutput << "\t";
 
-        harnessOutput.width(17);
         harnessOutput << "Expected Result: ";
-
-        harnessOutput.width(20);
         harnessOutput << invalid;
+        harnessOutput << "\t";
         
-        harnessOutput.width(10);
         harnessOutput << "Received: ";
-
-        harnessOutput.width(20);
         harnessOutput << monthConvert(s) << std::endl;
     }
 }
@@ -62,19 +52,14 @@ void testDayConvert(std::ofstream &harnessOutput)
         std::string s = strm.str();
         if (answers[i-1] != dayConvert(s))
         {
-            harnessOutput.width(40);
             harnessOutput << "Calling dayConvert(\"" + s + "\")";
+            harnessOutput << "\t";
 
-            harnessOutput.width(17);
             harnessOutput << "Expected Result: ";
-            
-            harnessOutput.width(10);
             harnessOutput << answers[i-1];
+            harnessOutput << "\t";
             
-            harnessOutput.width(10);
             harnessOutput << "Received: ";
-            
-            harnessOutput.width(10);
             harnessOutput << dayConvert(s) << std::endl;
         }
     }
@@ -93,38 +78,28 @@ void testYearConvert(std::ofstream &harnessOutput)
             std::string n = s.substr(2,2);
             if (answers[i] != yearConvert(n))
             {
-                harnessOutput.width(40);
                 harnessOutput << "Calling yearConvert(\"" + n + "\")";
+                harnessOutput << "\t";
 
-                harnessOutput.width(17);
                 harnessOutput << "Expected Result: ";
-                
-                harnessOutput.width(10);
                 harnessOutput << answers[i];
+                harnessOutput << "\t";
                 
-                harnessOutput.width(10);
                 harnessOutput << "Received: ";
-                
-                harnessOutput.width(10);
                 harnessOutput << yearConvert(n) << std::endl;
             }
         }
                 
         if (answers[i] != yearConvert(s))
         {
-            harnessOutput.width(40);
             harnessOutput << "Calling yearConvert(\"" + s + "\")";
+            harnessOutput << "\t";
 
-            harnessOutput.width(17);
             harnessOutput << "Expected Result: ";
-            
-            harnessOutput.width(10);
             harnessOutput << answers[i];
+            harnessOutput << "\t";
             
-            harnessOutput.width(10);
             harnessOutput << "Received: ";
-            
-            harnessOutput.width(10);
             harnessOutput << yearConvert(s) << std::endl;
         }
     }
@@ -147,19 +122,14 @@ void testDateConvert(std::ofstream &harnessOutput)
     {
         if (answers[i] != dateConvert(queries[i]))
         {
-            harnessOutput.width(40);
             harnessOutput << "Calling dateConvert(\"" + queries[i] + "\")";
+            harnessOutput << "\t";
             
-            harnessOutput.width(17);
             harnessOutput << "Expected Result: ";
-
-            harnessOutput.width(25);
             harnessOutput << answers[i];
+            harnessOutput << "\t";
 
-            harnessOutput.width(10);
             harnessOutput << "Received: ";
-
-            harnessOutput.width(25);
             harnessOutput << dateConvert(queries[i]) << std::endl;
         }
     }

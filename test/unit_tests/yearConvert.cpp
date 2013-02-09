@@ -11,38 +11,28 @@ void testYearConvert(std::ofstream &harnessOutput)
             std::string n = s.substr(2,2);
             if (answers[i] != yearConvert(n))
             {
-                harnessOutput.width(40);
                 harnessOutput << "Calling yearConvert(\"" + n + "\")";
+                harnessOutput << "\t";
 
-                harnessOutput.width(17);
                 harnessOutput << "Expected Result: ";
-                
-                harnessOutput.width(10);
                 harnessOutput << answers[i];
+                harnessOutput << "\t";
                 
-                harnessOutput.width(10);
                 harnessOutput << "Received: ";
-                
-                harnessOutput.width(10);
                 harnessOutput << yearConvert(n) << std::endl;
             }
         }
                 
         if (answers[i] != yearConvert(s))
         {
-            harnessOutput.width(40);
             harnessOutput << "Calling yearConvert(\"" + s + "\")";
+            harnessOutput << "\t";
 
-            harnessOutput.width(17);
             harnessOutput << "Expected Result: ";
-            
-            harnessOutput.width(10);
             harnessOutput << answers[i];
+            harnessOutput << "\t";
             
-            harnessOutput.width(10);
             harnessOutput << "Received: ";
-            
-            harnessOutput.width(10);
             harnessOutput << yearConvert(s) << std::endl;
         }
     }

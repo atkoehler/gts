@@ -13,19 +13,14 @@ void testDayConvert(std::ofstream &harnessOutput)
         std::string s = strm.str();
         if (answers[i-1] != dayConvert(s))
         {
-            harnessOutput.width(40);
             harnessOutput << "Calling dayConvert(\"" + s + "\")";
+            harnessOutput << "\t";
 
-            harnessOutput.width(17);
             harnessOutput << "Expected Result: ";
-            
-            harnessOutput.width(10);
             harnessOutput << answers[i-1];
+            harnessOutput << "\t";
             
-            harnessOutput.width(10);
             harnessOutput << "Received: ";
-            
-            harnessOutput.width(10);
             harnessOutput << dayConvert(s) << std::endl;
         }
     }
