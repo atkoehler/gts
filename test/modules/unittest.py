@@ -72,7 +72,7 @@ WORKING_DIR_NAME = "working"
 EXE_NAME = "test_program"
 UNIT_TEST_DIR = "unit_tests"
 INCLUDE_LINES = "includes.txt"
-TEST_FILE_NM = "test_file.cpp"
+TEST_FILE_NM = "testfile.cpp"
 UNIT_DIR_NAME = "unit_tests"
 
 ## 
@@ -131,14 +131,18 @@ def test(locations, test_obj, source, fn_name):
     ret = unit.create_unit(inc_stmt_path, unit_harness_path, merged_path, 
                      source, harness_dir)
 
+    message = []
+    suggestions = []
     # merge success
     if ret:
         # attempt compilation
         ret_val = compile_single(merged_path, exe_path, harness_dir)
         if not ret_val["success"]:
             test_obj.score = 0
-            test_obj.message = "Unit test did not compile. Make sure your function " + fn_name + " is properly defined.\n\n"
-            test_obj.message += "Compile Errors:\n\n" + ret_val["message"]
+            test_obj.message = markup_create_header("Compile Errors\n", 4)
+            test_obj.message += markup_create_indent(ret_val["message"], 1)
+            test_obj.message += markup_create_header("Suggestions\n", 2)
+            test_obj.message += "The unit test did not compile. If you have not yet implemented this function, you may ignore this. If you have started implementing your function " + fn_name + " and are attempting to test it, make sure it has a proper definition. Check its:\n" + markup_create_indent(markup_create_unlist(["return type", "function name", "parameter types", "number of parameters"]), 1)
             if made_working:
                 shutil.rmtree(working_dir)
             return OK
@@ -150,38 +154,86 @@ def test(locations, test_obj, source, fn_name):
         
     
         # run the unit test 
-        with open(outf, 'w') as out_file:
-            with open(errf, 'w') as err_file:
-                check_call([exe_path, unit_out], stdout=out_file, stderr=err_file)
-       
-        
-        message = "" 
-        if len(open(outf).read()) > 0: 
-            m = "The " + fn_name + " function should not contain any output."
-            if message == "":
-                message += m
-            else:
-                message += "\n\n" + m
-        
+        try:
+            with open(outf, 'w') as out_file:
+                with open(errf, 'w') as err_file:
+                    check_call([exe_path, unit_out], stdout=out_file, stderr=err_file)
+        except SystemError as e:
+            # create a notice about the abort throw and put in message
+            m = markup_create_header("Notice\n", 1)
+            m += "The " + fn_name + " unit test was aborted during execution. "
+            m += "If errors were output they will be displayed below and they "
+            m += "are a good starting point to determine why your code "
+            m += "crashed."
+            message.append(m)
+            
+            # create a suggestion about abort and put in suggestions
+            s = "The abort may have been caused by this function or any "
+            s += "function that it calls. If the functions that are called "
+            s += "are passing their respective tests then make sure " + fn_name
+            s += " is not calling another function with a bad value as one of "
+            s += "the parameters."
+            suggestions.append(s)
+
+        # put standard error in the message
         if len(open(errf).read()) > 0: 
-            m = "The " + fn_name + " function output errors:\n\n"
-            m = m + open(errf).read()
-            if message == "":
-                message += m
-            else:
-                message += "\n\n" + m
+            m = fn_name + " standard error\n"
+            m = markup_create_header(m, 4)
+            m = m + markup_create_indent(open(errf).read(), 1)
+            message.append(m)
+        
+        # put standard output in the message
+        if len(open(outf).read()) > 0: 
+            m = fn_name + " standard output\n"
+            m = markup_create_header(m, 4)
+            m = m + markup_create_indent(open(outf).read(), 1)
+            message.append(m)
  
+        # if the unit test had any output then add them to message 
         if os.path.isfile(unit_out):
-            unit_out_contents = open(unit_out).read()
+            unit_out_contents = open(unit_out).read().rstrip('\n')
         else:
-            unit_out_contents = ""
+            unit_out_contents = ""       
         
         if len(unit_out_contents) > 0:
-            if message == "":
-                message += unit_out_contents
-            else:
-                message += "\n\n" + unit_out_contents      
+            m = fn_name + " unit test output\n"
+            m = markup_create_header(m, 4)
+            con_list = unit_out_contents.split("\n")            
+            combine = []
+            for fail_test in con_list:
+                splits = fail_test.split("\t")
+                header = splits[0] + "\n"
+                results = splits[1:]
+                rlist = markup_create_unlist(results)
+                single_result = markup_create_header(header, 5)
+                single_result += markup_create_indent(rlist, 1)
+                combine.append(single_result)  
+                      
+            for (i, item) in enumerate(combine):
+                combine[i] = markup_create_indent(item, 1)
+            
+            m = m + "\n".join(combine)
+            message.append(m)
         
+        # create a suggestion about the existence of output if some exists
+        if len(open(outf).read()) > 0: 
+            s = "The " + fn_name + " function should not contain any output."
+            suggestions.append(s)
+        
+
+        
+        if len(unit_out_contents) > 0:
+            s = "You failed " + str(len(unit_out_contents.split('\n')))
+            s += " test cases. Start with the first test case in the unit test "
+            s += "output and try to fix it. Then look at the next. If you are "
+            s += "confident with your fixes submit your latest work."
+            suggestions.append(s)
+        
+        if len(suggestions) > 0:
+            m =  markup_create_header("Suggestions\n", 2)
+            m += markup_create_unlist(suggestions)
+            message.append(m)
+
         
         # if the message for this part is empty then it passes
         if len(message) == 0:
@@ -189,9 +241,9 @@ def test(locations, test_obj, source, fn_name):
         else:
             test_obj.score = 0
             if test_obj.message == "":
-                test_obj.message += message
+                test_obj.message += "\n".join(message)
             else:
-                test_obj.message += "\n\n" + message
+                test_obj.message += "\n" + "\n".join(message)
     else:
         test_obj.message = "Could not create unit test"        
 

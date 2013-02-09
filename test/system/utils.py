@@ -76,3 +76,23 @@ def markup_convert_newline(line):
     
     return "\n".join(line_split)
 
+def markup_create_header(line, level):
+    "Turn the line into a header by inserting proper markdown based on level"
+    
+    header = "#" * level + " "
+    return header + line
+
+def markup_create_indent(line, level):
+    "Indent the line by inserting proper markdown based on level"
+    
+    indent = "> " * level
+    return indent + line
+
+def markup_create_unlist(lines):
+    "Turn the list of lines into a markdown list"
+    
+    for (i, line) in enumerate(lines):
+        lines[i] = "* " + line
+
+    return "\n".join(lines)
+
