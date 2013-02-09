@@ -212,14 +212,7 @@ def test(locations, test_obj, source):
             test_obj.message = m + "\n\n" + test_obj.message
         test_obj.score = -1 * STYLE_PENALTY_MAX
     
-    # Still have a message for a perfect score
-    if test_obj.score == 0:
-        m = "Did not discover any style errors."
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
-    
+   
     return OK
 
 

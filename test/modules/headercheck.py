@@ -49,18 +49,14 @@ def test(locations, test_obj, source, submission):
     
     # loop over parts of header and run specific sub tests
     found_end = found_begin = False
+    messages = []
     for (i, line) in enumerate(source.header):
         # author email check
         if line.lower().find(AUTHOR_TAG.lower()) != -1:
             if not verify_email(submission["user"], line):
                 m = "Email in author line does not match submission email"
                 test_obj.score = -1 * PENALTY
-            else:
-                m = "Email in author line matches submission email"
-            if test_obj.message == "":
-                test_obj.message += m
-            else:
-                test_obj.message += "\n\n" + m
+                messages.append(m)
         
          
         # anti-plagiarism lines check
@@ -68,17 +64,13 @@ def test(locations, test_obj, source, submission):
             if i+2 >= len(source.header):
                 m = "Could not find anti-plagiarism lines"
                 test_obj.score = -1 * PENALTY
+                messages.append(m)
             else:
                 plag_lines = [source.header[i+1], source.header[i+2]]
                 if not check_plagiarism(plag_lines):
                     m = "Incorrect wording for anti-plagiarism lines"
                     test_obj.score = -1 * PENALTY
-                else:
-                    m = "Discovered proper anti-plagiarism lines"
-            if test_obj.message == "":
-                test_obj.message += m
-            else:
-                test_obj.message += "\n\n" + m
+                    messages.append(m)
         
             
         # flags for beginning and ending of assignment header 
@@ -88,17 +80,21 @@ def test(locations, test_obj, source, submission):
         if line.lower().find(END_HDR_FLAG.lower()) != -1:
             found_end = True
 
-    # assignment header begin and end lines exist        
-    if not found_end or not found_begin:
-        m = "Did not find begin or end line within the assignment header."
+    # assignment header begin line        
+    if not found_begin:
         test_obj.score = -1 * PENALTY
-    else:
-        m = "Discovered beginning and ending of assignment header."
-    if test_obj.message == "":
-        test_obj.message = m + test_obj.message
-    else:
-        test_obj.message = m + "\n\n" + test_obj.message
+        m = "Did not find begin assignment header line the assignment header."
+        messages.append(m)
     
+    # assignment header end line        
+    if not found_end:
+        test_obj.score = -1 * PENALTY
+        m = "Did not find end assignment header line the assignment header."
+        messages.append(m)
+   
+    if len(messages) > 0:
+        test_obj.message = "\n".join(messages)
+     
     return OK
 
 

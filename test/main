@@ -62,7 +62,7 @@ if source_exist:
 result.add_test(t)
 
 # TODO: remove this list creation once actions are activated in Galah
-config.actions = ["Submit Date Check", "File Name Check", "File Header Check", "Coding Style Check", "Compilation Check", "Functions Unit Test"]
+config.actions = ["Submit Date Check", "Proper File Name", "Proper Header Information", "Proper Programming Style", "Compilation Check", "Functions Unit Test"]
 
 # nothing can be done if no source file was discovered
 if source_exist: 
@@ -84,7 +84,7 @@ if source_exist:
             result.add_test(t)
     
     
-    name = "File Name Check"
+    name = "Proper File Name"
     if name in config.actions:
         # create test object
         t = GalahTest()
@@ -99,7 +99,7 @@ if source_exist:
             result.add_test(t)
     
     
-    name = "File Header Check"
+    name = "Proper Header Information"
     if name in config.actions:
         # create test object
         t = GalahTest()
@@ -114,7 +114,7 @@ if source_exist:
             result.add_test(t)
     
     
-    name = "Coding Style Check"
+    name = "Proper Programming Style"
     if name in config.actions:
         # create test object
         t = GalahTest()

@@ -160,7 +160,7 @@ def test(locations, test_obj, source, fn_name):
                     check_call([exe_path, unit_out], stdout=out_file, stderr=err_file)
         except SystemError as e:
             # create a notice about the abort throw and put in message
-            m = markup_create_header("Notice\n", 1)
+            m = markup_create_header("Notice\n", 2)
             m += "The " + fn_name + " unit test was aborted during execution. "
             m += "If errors were output they will be displayed below and they "
             m += "are a good starting point to determine why your code "
@@ -205,12 +205,12 @@ def test(locations, test_obj, source, fn_name):
                 header = splits[0] + "\n"
                 results = splits[1:]
                 rlist = markup_create_unlist(results)
-                single_result = markup_create_header(header, 5)
-                single_result += markup_create_indent(rlist, 1)
+                single_result = markup_create_header(header, 3)
+                single_result += markup_create_indent(rlist, 2)
                 combine.append(single_result)  
                       
             for (i, item) in enumerate(combine):
-                combine[i] = markup_create_indent(item, 1)
+                combine[i] = markup_create_indent(item, 2)
             
             m = m + "\n".join(combine)
             message.append(m)
