@@ -1,6 +1,6 @@
 {
 "testables_directory": "/home/csgrads/akoeh001/gts-test/students/akoehler",
-"harness_directory": "/home/csgrads/akoeh001/git/gts/test",
+"harness_directory": "/home/csgrads/akoeh001/git/gts/src",
 "raw_harness": {},
 "raw_submission": {
         "user": "akoeh001@cs.ucr.edu",
