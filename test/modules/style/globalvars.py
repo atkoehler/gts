@@ -28,6 +28,8 @@ def globals_exist(test, harness_dir, source):
     # intialize to empty list of global variables  
     vars = [] 
     
+    files_to_remove = []
+    
     # make sure the commands exist
     nm = which("nm")
     grep = which("grep")
@@ -40,6 +42,9 @@ def globals_exist(test, harness_dir, source):
     working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
+        made_working = True
+    else:
+        made_working = False
     
     FNULL = open(os.devnull, 'w')
     try:
@@ -48,18 +53,21 @@ def globals_exist(test, harness_dir, source):
         # compile the object file
         object_file = source.name[0:source.name.find(".")] + ".o"
         obj_loc = os.path.join(working_dir, object_file)
+        files_to_remove.append(obj_loc)
         cmd = " ".join([gpp, "-o", obj_loc, source.file_loc])
         check_call([gpp, "-o", obj_loc, source.file_loc], 
                    stdout=FNULL, stderr=FNULL)
         
         # get object symbols
         symf = os.path.join(working_dir, "symbols.txt")
+        files_to_remove.append(symf)
         cmd = " ".join([nm, obj_loc])
         with open(symf, 'w') as sym_file:
             check_call([nm, obj_loc], stdout=sym_file, stderr=FNULL)
         
         # grep for proper symbols relating to global variables
         grepf = os.path.join(working_dir, "grep.txt")
+        files_to_remove.append(grepf)
         cmd = " ".join([grep, "[0-9A-Fa-f]* [BCDGRS]"])
         with open(symf, 'r') as sym_file:
             with open(grepf, 'w') as grep_file:
@@ -68,6 +76,7 @@ def globals_exist(test, harness_dir, source):
         
         # cut off the variable names
         cutf = os.path.join(working_dir, "cut.txt")
+        files_to_remove.append(cutf)
         with open(grepf, 'r') as grep_file:
             with open(cutf, 'w') as cut_file:
                 check_call([cut, "-d", " ", "-f" "3"], 
@@ -82,13 +91,25 @@ def globals_exist(test, harness_dir, source):
     except SystemError:
     # TODO: determine what to do in except clause, outputing error cause issue?
         FNULL.close()
-        shutil.rmtree(working_dir)
+        if made_working:
+            shutil.rmtree(working_dir)
+        elif len(files_to_remove) > 0:
+            for f in files_to_remove:
+                if os.path.isfile(f):
+                    os.remove(f)
         return None
     
-    # remove working directory
-    shutil.rmtree(working_dir)
+    # remove working directory if created it otherwise remove files created
+    if made_working:
+        shutil.rmtree(working_dir)
+    elif len(files_to_remove) > 0:
+        for f in files_to_remove:
+            if os.path.isfile(f):
+                os.remove(f)
+    
     FNULL.close() 
     test.score = -1 * DEDUCTION_PER_GAFFE * len(vars)
+    
     return vars
 
 

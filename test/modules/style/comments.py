@@ -8,8 +8,6 @@
 
 # TODO: figure out the configuration system to get this item from their
 DEDUCTION_PER_GAFFE = 5
-WORKING_DIR_NAME = "working"
-COMPILER = "g++"
 
 ## 
 # @brief sub test to check whether comments exist in source file which are not

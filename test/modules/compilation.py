@@ -32,6 +32,7 @@ INCLUDES_DIR = "system/includes"
 #
 def test(locations, test_obj, source):
     import os
+    import shutil
     OK = 0
     ERROR = -1
     
@@ -42,6 +43,8 @@ def test(locations, test_obj, source):
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
         made_working = True
+    else:
+        made_working = False
     
     
     # set up compiler error text file path
@@ -62,8 +65,9 @@ def test(locations, test_obj, source):
     
     # remove the working directory if made it
     if made_working:
-        import shutil
         shutil.rmtree(working_dir)    
+    elif os.path.isfile(exe_path):
+        os.remove(exe_path) 
     
     return OK
 
@@ -175,9 +179,8 @@ def strip_comments(file_wpath, harness_dir):
         made_working = False
  
     # attempt to compiler preprocessor to strip comments
+    out_file_path = os.path.join(working_dir, "out.txt")
     try:
-        out_file_path = os.path.join(working_dir, "out.txt")
-        
         with open(out_file_path, 'w') as outFile:
             r = check_output([gpp, "-fpreprocessed", "-E", 
                                "-I", include_path, file_wpath], 
@@ -193,7 +196,9 @@ def strip_comments(file_wpath, harness_dir):
     
     # remove the working directory if function created it
     if made_working:
-        shutil.rmtree(working_dir)    
-
+        shutil.rmtree(working_dir)   
+    elif os.path.isfile(out_file_path):
+        os.remove(out_file_path)
+    
     return {"success": compiled, "message": message}
 

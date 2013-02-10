@@ -90,23 +90,34 @@ def test(locations, test_obj, source, fn_name):
     ERROR = -1
     
     harness_dir = locations[1]
+    files_to_remove = []
 
     # check if working directory exists, if not make one
     working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
         made_working = True
+    else:
+        made_working = False
     
     # set up path to executable rename
     exe_path = os.path.join(working_dir, EXE_NAME)
+    files_to_remove.append(exe_path)
 
     # attempt compilation
     ret_val = compile_single(source.file_loc, exe_path, harness_dir)
     if not ret_val["success"]:
         test_obj.score = 0
         test_obj.message = "File did not compile, cannot execute tests."
+        
+        # clean up
         if made_working:
             shutil.rmtree(working_dir)
+        elif len(files_to_remove) > 0:
+            for f in files_to_remove:
+                if os.path.isfile(f):
+                    os.remove(f)
+        
         return OK
     
     # create unit testing file
@@ -115,22 +126,31 @@ def test(locations, test_obj, source, fn_name):
     # TODO: make sure all the paths and files exist before accessing/using 
     # set up path to unit tests directory
     unit_dir = os.path.join(harness_dir, UNIT_DIR_NAME)
-    unit_filename = fn_name + ".cpp"
-    unit_harness = os.path.join(unit_dir, unit_filename)
-    
-    # set up path to testing file
-    merged_path = os.path.join(working_dir, TEST_FILE_NM)
     
     # set up path to #include lines
     inc_stmt_path = os.path.join(unit_dir, INCLUDE_LINES)
     
     # set up path to harness C++ file
+    unit_filename = fn_name + ".cpp"
+    unit_harness = os.path.join(unit_dir, unit_filename)
     unit_harness_path = os.path.join(unit_dir, unit_harness)
+    
+    # set up path to testing file
+    merged_path = os.path.join(working_dir, TEST_FILE_NM)
+    files_to_remove.append(merged_path)
     
     # create the unit
     ret = unit.create_unit(inc_stmt_path, unit_harness_path, merged_path, 
                      source, harness_dir)
-
+    
+    # set up paths for unit test output
+    unit_out = os.path.join(working_dir, "unit_test_output.txt")
+    errf = os.path.join(working_dir, "test_program_err.txt")   
+    outf = os.path.join(working_dir, "test_program_out.txt")   
+    files_to_remove.append(unit_out)
+    files_to_remove.append(errf)
+    files_to_remove.append(outf)
+        
     message = []
     suggestions = []
     # merge success
@@ -145,14 +165,13 @@ def test(locations, test_obj, source, fn_name):
             test_obj.message += "The unit test did not compile. If you have not yet implemented this function, you may ignore this. If you have started implementing your function " + fn_name + " and are attempting to test it, make sure it has a proper definition. Check its:\n" + markup_create_indent(markup_create_unlist(["return type", "function name", "parameter types", "number of parameters"]), 1)
             if made_working:
                 shutil.rmtree(working_dir)
+            elif len(files_to_remove) > 0:
+                for f in files_to_remove:
+                    if os.path.isfile(f):
+                        os.remove(f)
             return OK
         
-        # set up paths for unit test output
-        unit_out = os.path.join(working_dir, "unit_test_output.txt")
-        errf = os.path.join(working_dir, "test_program_err.txt")   
-        outf = os.path.join(working_dir, "test_program_out.txt")   
         
-    
         # run the unit test 
         try:
             with open(outf, 'w') as out_file:
@@ -174,7 +193,7 @@ def test(locations, test_obj, source, fn_name):
             s += " is not calling another function with a bad value as one of "
             s += "the parameters."
             suggestions.append(s)
-
+        
         # put standard error in the message
         if len(open(errf).read()) > 0: 
             m = fn_name + " standard error\n"
@@ -188,7 +207,7 @@ def test(locations, test_obj, source, fn_name):
             m = markup_create_header(m, 4)
             m = m + markup_create_indent(open(outf).read(), 1)
             message.append(m)
- 
+         
         # if the unit test had any output then add them to message 
         if os.path.isfile(unit_out):
             unit_out_contents = open(unit_out).read().rstrip('\n')
@@ -219,9 +238,8 @@ def test(locations, test_obj, source, fn_name):
         if len(open(outf).read()) > 0: 
             s = "The " + fn_name + " function should not contain any output."
             suggestions.append(s)
-        
-
-        
+       
+        # create suggestion if any unit tests failed 
         if len(unit_out_contents) > 0:
             s = "You failed " + str(len(unit_out_contents.split('\n')))
             s += " test cases. Start with the first test case in the unit test "
@@ -229,6 +247,7 @@ def test(locations, test_obj, source, fn_name):
             s += "confident with your fixes submit your latest work."
             suggestions.append(s)
         
+        # add suggestions section to message
         if len(suggestions) > 0:
             m =  markup_create_header("Suggestions\n", 2)
             m += markup_create_unlist(suggestions)
@@ -246,9 +265,14 @@ def test(locations, test_obj, source, fn_name):
                 test_obj.message += "\n" + "\n".join(message)
     else:
         test_obj.message = "Could not create unit test"        
-
+    
+    # clean up
     if made_working:
         shutil.rmtree(working_dir)
-    
+    elif len(files_to_remove) > 0:
+        for f in files_to_remove:
+            if os.path.isfile(f):
+                os.remove(f)
+        
     return OK
 

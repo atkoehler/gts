@@ -10,9 +10,6 @@
 STYLE_PENALTY_MAX = 10
 DEDUCTION_PER_GAFFE = 5
 LONG_LINE_COUNT = 80
-WORKING_DIR_NAME = "working"
-COMPILER = "g++"
-DEFAULT_SPACING = 3
 
 from galah.interact import *
 

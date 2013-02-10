@@ -23,19 +23,10 @@ INCLUDES_DIR = "system/includes"
 #
 def test(locations, test_obj, source):
     import os
-    import shutil
     OK = 0
     ERROR = -1
     
     harness_dir = locations[1]
-    
-    # create a working directory if one doesn't exist
-    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
-    if not os.path.exists(working_dir):
-        os.mkdir(working_dir)
-        made_working = True
-    else:
-        made_working = False
     
     # cuddle do-while, no tabs
     add_args = ["-cdw", "-nut"] 
@@ -51,10 +42,6 @@ def test(locations, test_obj, source):
         test_obj.message = ret_val["message"]
     else:
         test_obj.message = "indent command executed without errors"
-    
-    # remove the working directory if this function created it
-    if made_working:
-        shutil.rmtree(working_dir) 
     
     return OK
 
@@ -128,6 +115,8 @@ def indent_args(f, p, arg_list):
     import shutil
     from system.utils import which, check_call
     
+    files_to_remove = []
+    
     indented = False
     message = "Could not indent the file"
     error = None
@@ -179,7 +168,9 @@ def indent_args(f, p, arg_list):
     
     
     errf = os.path.join(working_dir, "indent_errors.txt")
+    files_to_remove.append(errf)
     indentf = os.path.join(working_dir, "indent_out.cpp")
+    files_to_remove.append(indentf)
     try:
         command = [indent]
         for arg in arg_list:
@@ -212,11 +203,14 @@ def indent_args(f, p, arg_list):
         pre = "WARNING: Failed compilation may result in additional errors from indent command.\n\n"
         error = pre + error
     
-    # remove the working directory if this process created it
+    # remove working directory if this process created it otherwise all files
     if made_working:
         shutil.rmtree(working_dir) 
-    elif os.path.isfile(errf):
-        os.remove(errf)
-
+    elif len(files_to_remove) > 0:
+        for f in files_to_remove:
+            if os.path.isfile(f):
+                os.remove(f)
+        
+    
     return {"success": indented, "message": message, "errors": error}
 
