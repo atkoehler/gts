@@ -14,14 +14,21 @@
 # @param lines a list of lines to search for string
 # @param look_for the string to search for
 # @param replace_with the string to serve as replacement
+# @param count if set, the first count instances of look_for will be replaced
 #
 # @return True if replace succeeded, otherwise False
 #
-def replace_source(lines, look_for, replace_with):
-    ret = False
+def replace_source(lines, look_for, replace_with, count = -1):
+    n = 0
     for (i, line) in enumerate(lines):
+        if count != -1 and n >= count:
+            break
         if line != line.replace(look_for, replace_with):
             lines[i] = line.replace(look_for, replace_with)
-            ret = True
+            n = n + 1
     
-    return ret
+    if (count == -1 and n > 0) or (count != -1 and n == count):
+        return True
+    else:
+        return False
+
