@@ -191,7 +191,7 @@ def test(locations, test_obj, source, fn_name):
             s += "function that it calls. If the functions that are called "
             s += "are passing their respective tests then make sure " + fn_name
             s += " is not calling another function with a bad value as one of "
-            s += "the parameters."
+            s += "the parameters or not returning an improper value."
             suggestions.append(s)
             
             # if seg fault was detected
