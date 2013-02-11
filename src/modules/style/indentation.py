@@ -69,7 +69,7 @@ def correct_indent(source):
         for (i, line) in enumerate(cur_block.lines):
             if len(line.strip()) > 0 and sp != line.find(line.lstrip()[0]):
                 if i-1 >= 0:
-                    if lines[i-1].find(";") != -1:
+                    if cur_block.lines[i-1].find(";") != -1:
                         if sp+source.indent_size != line.find(line.lstrip()[0]):
                             bad_lines.append(cur_block.start_line)
                 else:
