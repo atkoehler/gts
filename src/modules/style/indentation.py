@@ -66,9 +66,14 @@ def correct_indent(source):
     
     for cur_block in blocks:
         sp = cur_block.level * source.indent_size
-        for line in cur_block.lines:
+        for (i, line) in enumerate(cur_block.lines):
             if len(line.strip()) > 0 and sp != line.find(line.lstrip()[0]):
-                bad_lines.append(cur_block.start_line)
+                if i-1 >= 0:
+                    if lines[i-1].find(";") != -1:
+                        if sp+source.indent_size != line.find(line.lstrip()[0]):
+                            bad_lines.append(cur_block.start_line)
+                else:
+                    bad_lines.append(cur_block.start_line)
     
     # test completed and return list of lines where bad indent blocks start
     return (True, sorted(list(set(bad_lines))))
