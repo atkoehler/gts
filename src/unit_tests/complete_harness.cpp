@@ -1,6 +1,9 @@
 
 void testMonthConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
+
     std::string answers[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
     std::string invalid = "Invalid Month";
 
@@ -9,36 +12,58 @@ void testMonthConvert(std::ofstream &harnessOutput)
         std::stringstream strm;
         strm << i;
         std::string s = strm.str();
-        if (answers[i-1] != monthConvert(s))
+        try
+        {
+            ret_val = monthConvert(s);
+            proper = answers[i-1] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling monthConvert(\"" + s + "\")";
+                harnessOutput << "\t";
+
+                harnessOutput << "Expected Result: ";
+                harnessOutput << answers[i-1];
+                harnessOutput << "\t";
+
+                harnessOutput << "Received: ";
+                harnessOutput << monthConvert(s) << std::endl;
+            }
+        }
+        catch(...)
+        {
+            cerr << "Exception thrown ";
+            cerr << "calling monthConvert(\"" + s + "\")" << endl;
+        }
+    }
+    std::string s = "0";
+    try
+    {
+        ret_val = monthConvert(s);
+        proper = invalid == ret_val;
+        if (!proper)
         {
             harnessOutput << "Calling monthConvert(\"" + s + "\")";
             harnessOutput << "\t";
 
             harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i-1];
+            harnessOutput << invalid;
             harnessOutput << "\t";
-
+            
             harnessOutput << "Received: ";
             harnessOutput << monthConvert(s) << std::endl;
         }
     }
-    std::string s = "0";
-    if (invalid != monthConvert(s))
+    catch(...)
     {
-        harnessOutput << "Calling monthConvert(\"" + s + "\")";
-        harnessOutput << "\t";
-
-        harnessOutput << "Expected Result: ";
-        harnessOutput << invalid;
-        harnessOutput << "\t";
-        
-        harnessOutput << "Received: ";
-        harnessOutput << monthConvert(s) << std::endl;
+        cerr << "Exception thrown ";
+        cerr << "calling monthConvert(\"" + s + "\")" << endl;
     }
 }
 
 void testDayConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
     std::string answers[] = {"1st", "2nd", "3rd", "4th", "5th", "6th", "7th",
                              "8th", "9th", "10th", "11th", "12th", "13th", 
                              "14th", "15th", "16th", "17th", "18th", "19th", 
@@ -50,23 +75,35 @@ void testDayConvert(std::ofstream &harnessOutput)
         std::stringstream strm;
         strm << i;
         std::string s = strm.str();
-        if (answers[i-1] != dayConvert(s))
+        try
         {
-            harnessOutput << "Calling dayConvert(\"" + s + "\")";
-            harnessOutput << "\t";
+            ret_val = dayConvert(s);
+            proper = answers[i-1] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling dayConvert(\"" + s + "\")";
+                harnessOutput << "\t";
 
-            harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i-1];
-            harnessOutput << "\t";
-            
-            harnessOutput << "Received: ";
-            harnessOutput << dayConvert(s) << std::endl;
+                harnessOutput << "Expected Result: ";
+                harnessOutput << answers[i-1];
+                harnessOutput << "\t";
+                
+                harnessOutput << "Received: ";
+                harnessOutput << dayConvert(s) << std::endl;
+            }
+        }
+        catch(...)
+        {
+            cerr << "Exception thrown ";
+            cerr << "calling dayConvert(\"" + s + "\")";
         }
     }
 }
 
 void testYearConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
     std::string answers[] = {"1945", "2043", "1900", "2000", "1979"};
 
     for (int i=0; i < 5; i++)
@@ -76,9 +113,37 @@ void testYearConvert(std::ofstream &harnessOutput)
         if (s.substr(0,2) == "20")
         {
             std::string n = s.substr(2,2);
-            if (answers[i] != yearConvert(n))
+            try
             {
-                harnessOutput << "Calling yearConvert(\"" + n + "\")";
+                ret_val = yearConvert(n);
+                proper = answers[i] == ret_val;
+                if (!proper)
+                {
+                    harnessOutput << "Calling yearConvert(\"" + n + "\")";
+                    harnessOutput << "\t";
+
+                    harnessOutput << "Expected Result: ";
+                    harnessOutput << answers[i];
+                    harnessOutput << "\t";
+                    
+                    harnessOutput << "Received: ";
+                    harnessOutput << yearConvert(n) << std::endl;
+                }
+            } 
+            catch(...)
+            {
+                cerr << "Exception thrown ";
+                cerr << "calling yearConvert(\"" + n + "\")";
+            }
+        }
+                
+        try
+        {
+            ret_val = yearConvert(s);
+            proper = answers[i] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling yearConvert(\"" + s + "\")";
                 harnessOutput << "\t";
 
                 harnessOutput << "Expected Result: ";
@@ -86,27 +151,21 @@ void testYearConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
                 
                 harnessOutput << "Received: ";
-                harnessOutput << yearConvert(n) << std::endl;
+                harnessOutput << yearConvert(s) << std::endl;
             }
         }
-                
-        if (answers[i] != yearConvert(s))
+        catch(...)
         {
-            harnessOutput << "Calling yearConvert(\"" + s + "\")";
-            harnessOutput << "\t";
-
-            harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i];
-            harnessOutput << "\t";
-            
-            harnessOutput << "Received: ";
-            harnessOutput << yearConvert(s) << std::endl;
+            cerr << "Exception thrown ";
+            cerr << "calling yearConvert(\"" + s + "\")";
         }
     }
 }
 
 void testDateConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
     std::string queries[] = {"7/4/1776", "12/7/1941", "2/2/1929", "9/11/2001",
                              "1/23/45", "1/15/17", "10/30/1998", "11/1/12"};
     std::string answers[] = {"July 4th, 1776",
@@ -120,17 +179,27 @@ void testDateConvert(std::ofstream &harnessOutput)
 
     for (int i=0; i < 8; i++)
     {
-        if (answers[i] != dateConvert(queries[i]))
+        try
         {
-            harnessOutput << "Calling dateConvert(\"" + queries[i] + "\")";
-            harnessOutput << "\t";
-            
-            harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i];
-            harnessOutput << "\t";
+            ret_val = dateConvert(queries[i]);
+            proper = answers[i] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling dateConvert(\"" + queries[i] + "\")";
+                harnessOutput << "\t";
+                
+                harnessOutput << "Expected Result: ";
+                harnessOutput << answers[i];
+                harnessOutput << "\t";
 
-            harnessOutput << "Received: ";
-            harnessOutput << dateConvert(queries[i]) << std::endl;
+                harnessOutput << "Received: ";
+                harnessOutput << dateConvert(queries[i]) << std::endl;
+            }
+        }
+        catch(...)
+        {
+            cerr << "Exception thrown ";
+            cerr << "calling dateConvert(\"" + queries[i] + "\")";
         }
     }
 }

@@ -1,5 +1,7 @@
 void testYearConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
     std::string answers[] = {"1945", "2043", "1900", "2000", "1979"};
 
     for (int i=0; i < 5; i++)
@@ -9,9 +11,37 @@ void testYearConvert(std::ofstream &harnessOutput)
         if (s.substr(0,2) == "20")
         {
             std::string n = s.substr(2,2);
-            if (answers[i] != yearConvert(n))
+            try
             {
-                harnessOutput << "Calling yearConvert(\"" + n + "\")";
+                ret_val = yearConvert(n);
+                proper = answers[i] == ret_val;
+                if (!proper)
+                {
+                    harnessOutput << "Calling yearConvert(\"" + n + "\")";
+                    harnessOutput << "\t";
+
+                    harnessOutput << "Expected Result: ";
+                    harnessOutput << answers[i];
+                    harnessOutput << "\t";
+                    
+                    harnessOutput << "Received: ";
+                    harnessOutput << yearConvert(n) << std::endl;
+                }
+            } 
+            catch(...)
+            {
+                cerr << "Exception thrown ";
+                cerr << "calling yearConvert(\"" + n + "\")";
+            }
+        }
+                
+        try
+        {
+            ret_val = yearConvert(s);
+            proper = answers[i] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling yearConvert(\"" + s + "\")";
                 harnessOutput << "\t";
 
                 harnessOutput << "Expected Result: ";
@@ -19,24 +49,17 @@ void testYearConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
                 
                 harnessOutput << "Received: ";
-                harnessOutput << yearConvert(n) << std::endl;
+                harnessOutput << yearConvert(s) << std::endl;
             }
         }
-                
-        if (answers[i] != yearConvert(s))
+        catch(...)
         {
-            harnessOutput << "Calling yearConvert(\"" + s + "\")";
-            harnessOutput << "\t";
-
-            harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i];
-            harnessOutput << "\t";
-            
-            harnessOutput << "Received: ";
-            harnessOutput << yearConvert(s) << std::endl;
+            cerr << "Exception thrown ";
+            cerr << "calling yearConvert(\"" + s + "\")";
         }
     }
 }
+
 
 int main(int argc, char **argv)
 {

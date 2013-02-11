@@ -1,5 +1,8 @@
+
 void testDateConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
     std::string queries[] = {"7/4/1776", "12/7/1941", "2/2/1929", "9/11/2001",
                              "1/23/45", "1/15/17", "10/30/1998", "11/1/12"};
     std::string answers[] = {"July 4th, 1776",
@@ -13,20 +16,32 @@ void testDateConvert(std::ofstream &harnessOutput)
 
     for (int i=0; i < 8; i++)
     {
-        if (answers[i] != dateConvert(queries[i]))
+        try
         {
-            harnessOutput << "Calling dateConvert(\"" + queries[i] + "\")";
-            harnessOutput << "\t";
-            
-            harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i];
-            harnessOutput << "\t";
+            ret_val = dateConvert(queries[i]);
+            proper = answers[i] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling dateConvert(\"" + queries[i] + "\")";
+                harnessOutput << "\t";
+                
+                harnessOutput << "Expected Result: ";
+                harnessOutput << answers[i];
+                harnessOutput << "\t";
 
-            harnessOutput << "Received: ";
-            harnessOutput << dateConvert(queries[i]) << std::endl;
+                harnessOutput << "Received: ";
+                harnessOutput << dateConvert(queries[i]) << std::endl;
+            }
+        }
+        catch(...)
+        {
+            cerr << "Exception thrown ";
+            cerr << "calling dateConvert(\"" + queries[i] + "\")";
         }
     }
 }
+
+
 
 int main(int argc, char **argv)
 {

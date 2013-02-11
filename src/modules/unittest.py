@@ -193,6 +193,16 @@ def test(locations, test_obj, source, fn_name):
             s += " is not calling another function with a bad value as one of "
             s += "the parameters."
             suggestions.append(s)
+            
+            # if seg fault was detected
+            # TODO: this access is ugly and should be cleaned up
+            if e[0][0] == -11:
+                cl = ["return value", "values of each parameter"]
+                s = "A segmentation fault was detected when invoking your "
+                s += "function. Make sure you check the following for "
+                s += fn_name + " as well as any functions it invokes.\n"
+                s += markup_create_indent(markup_create_unlist(cl), 1)
+                suggestions.append(s)
         
         # put standard error in the message
         if len(open(errf).read()) > 0: 

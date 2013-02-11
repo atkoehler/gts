@@ -1,6 +1,9 @@
 
 void testMonthConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
+
     std::string answers[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
     std::string invalid = "Invalid Month";
 
@@ -9,35 +12,53 @@ void testMonthConvert(std::ofstream &harnessOutput)
         std::stringstream strm;
         strm << i;
         std::string s = strm.str();
-        if (answers[i-1] != monthConvert(s))
+        try
+        {
+            ret_val = monthConvert(s);
+            proper = answers[i-1] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling monthConvert(\"" + s + "\")";
+                harnessOutput << "\t";
+
+                harnessOutput << "Expected Result: ";
+                harnessOutput << answers[i-1];
+                harnessOutput << "\t";
+
+                harnessOutput << "Received: ";
+                harnessOutput << monthConvert(s) << std::endl;
+            }
+        }
+        catch(...)
+        {
+            cerr << "Exception thrown ";
+            cerr << "calling monthConvert(\"" + s + "\")" << endl;
+        }
+    }
+    std::string s = "0";
+    try
+    {
+        ret_val = monthConvert(s);
+        proper = invalid == ret_val;
+        if (!proper)
         {
             harnessOutput << "Calling monthConvert(\"" + s + "\")";
             harnessOutput << "\t";
 
             harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i-1];
+            harnessOutput << invalid;
             harnessOutput << "\t";
-
+            
             harnessOutput << "Received: ";
             harnessOutput << monthConvert(s) << std::endl;
         }
     }
-    std::string s = "0";
-    if (invalid != monthConvert(s))
+    catch(...)
     {
-        harnessOutput << "Calling monthConvert(\"" + s + "\")";
-        harnessOutput << "\t";
-
-        harnessOutput << "Expected Result: ";
-        harnessOutput << invalid;
-        harnessOutput << "\t";
-        
-        harnessOutput << "Received: ";
-        harnessOutput << monthConvert(s) << std::endl;
+        cerr << "Exception thrown ";
+        cerr << "calling monthConvert(\"" + s + "\")" << endl;
     }
 }
-
-
 
 int main(int argc, char **argv)
 {

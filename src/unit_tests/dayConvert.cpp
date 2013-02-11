@@ -1,5 +1,8 @@
+
 void testDayConvert(std::ofstream &harnessOutput)
 {
+    bool proper = false;
+    std::string ret_val;
     std::string answers[] = {"1st", "2nd", "3rd", "4th", "5th", "6th", "7th",
                              "8th", "9th", "10th", "11th", "12th", "13th", 
                              "14th", "15th", "16th", "17th", "18th", "19th", 
@@ -11,20 +14,32 @@ void testDayConvert(std::ofstream &harnessOutput)
         std::stringstream strm;
         strm << i;
         std::string s = strm.str();
-        if (answers[i-1] != dayConvert(s))
+        try
         {
-            harnessOutput << "Calling dayConvert(\"" + s + "\")";
-            harnessOutput << "\t";
+            ret_val = dayConvert(s);
+            proper = answers[i-1] == ret_val;
+            if (!proper)
+            {
+                harnessOutput << "Calling dayConvert(\"" + s + "\")";
+                harnessOutput << "\t";
 
-            harnessOutput << "Expected Result: ";
-            harnessOutput << answers[i-1];
-            harnessOutput << "\t";
-            
-            harnessOutput << "Received: ";
-            harnessOutput << dayConvert(s) << std::endl;
+                harnessOutput << "Expected Result: ";
+                harnessOutput << answers[i-1];
+                harnessOutput << "\t";
+                
+                harnessOutput << "Received: ";
+                harnessOutput << dayConvert(s) << std::endl;
+            }
+        }
+        catch(...)
+        {
+            cerr << "Exception thrown ";
+            cerr << "calling dayConvert(\"" + s + "\")";
         }
     }
 }
+
+
 
 int main(int argc, char **argv)
 {
