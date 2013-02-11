@@ -11,7 +11,7 @@
 WORKING_DIR_NAME = "working"
 PENALTY = 25
 COMPILER = "g++"
-INCLUDES_DIR = "system/includes"
+INCLUDES_DIR = "system/include"
 
 ## 
 # @brief test function checks file name against a required name

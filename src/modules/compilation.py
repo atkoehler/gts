@@ -19,7 +19,7 @@ WORKING_DIR_NAME = "working"
 EXE_NAME = "test_program"
 COMPILER_ERR_FNAME = "compiler_errors.txt"
 PENALTY = 25
-INCLUDES_DIR = "system/includes"
+INCLUDES_DIR = "system/include"
 
 ## 
 # @brief test function checks compilation of the program

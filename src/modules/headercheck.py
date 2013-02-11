@@ -23,6 +23,7 @@ END_HDR_FLAG = "END ASSIGNMENT HEADER"
 
 
 from galah.interact import *
+from system.utils import *
 
 ## 
 # @brief the header check module is composed of several parts that verify
@@ -93,7 +94,7 @@ def test(locations, test_obj, source, submission):
         messages.append(m)
    
     if len(messages) > 0:
-        test_obj.message = "\n".join(messages)
+        test_obj.message = markup_create_indent(markup_create_unlist(messages),1)
      
     return OK
 
