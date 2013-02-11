@@ -8,7 +8,7 @@
 #
 
 # TODO: figure out the configuration system to get this item from their
-LATE_PENALTY = 20
+LATE_PENALTY = 1
 
 
 ## 
