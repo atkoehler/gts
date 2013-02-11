@@ -85,8 +85,14 @@ def markup_create_header(line, level):
 def markup_create_indent(line, level):
     "Indent the line by inserting proper markdown based on level"
     
-    indent = "> " * level
-    return indent + line
+    if line.find('\n') == -1 or line.find('\n') == (len(line) - 1):
+        return "> " * level + line
+    else:
+        lines = line.split('\n')
+        for (i, l) in enumerate(lines):
+            lines[i] = "> " * level + l
+        line = "\n".join(lines)
+        return line
 
 def markup_create_unlist(lines):
     "Turn the list of lines into a markdown list"
