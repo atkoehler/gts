@@ -65,6 +65,12 @@ def test(locations, test_obj, source):
     sub_test = GalahTestPart()
     sub_test.name = name
     ret = comments.comments_exist(sub_test, source)
+    if not ret:
+        m = "Did not find any comments in source code"
+        if test_obj.message == "":
+            test_obj.message += m
+        else:
+            test_obj.message += "\n\n" + m
     test_obj.parts.append(sub_test)
     
     
