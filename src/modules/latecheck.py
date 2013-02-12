@@ -10,6 +10,7 @@
 # TODO: figure out the configuration system to get this item from their
 LATE_PENALTY = 1
 
+from system.utils import *
 
 ## 
 # @brief test function checks the submission date against the due date
@@ -40,7 +41,8 @@ def test(locations, test_obj, submit_date, due_date):
         test_obj.message = "Submitted before the deadline."
     else:
         test_obj.score = -1 * LATE_PENALTY
-        test_obj.message = "Submitted after the deadline."
+        test_obj.message = "Submitted " + markup_create_bold("after") + " the "
+        test_obj.message += "deadline."
 
     return OK
 

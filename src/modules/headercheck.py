@@ -45,7 +45,7 @@ def test(locations, test_obj, source, submission):
     # failed to located header on split of source
     if len(source.header) == 0:
         test_obj.score = -1 * PENALTY
-        test_obj.message = "Header not found: Either it does not exist or the test harness could not find begin header line."
+        test_obj.message = "Header not found: Either it does not exist or the test harness could not find " + markup_create_italic(BEGIN_HDR_FLAG) + " line."
         return OK
     
     # loop over parts of header and run specific sub tests
@@ -84,17 +84,17 @@ def test(locations, test_obj, source, submission):
     # assignment header begin line        
     if not found_begin:
         test_obj.score = -1 * PENALTY
-        m = "Did not find begin assignment header line the assignment header."
+        m = "Did not find " + markup_create_italic(BEGIN_HDR_FLAG) + " line in the assignment header."
         messages.append(m)
     
     # assignment header end line        
     if not found_end:
         test_obj.score = -1 * PENALTY
-        m = "Did not find end assignment header line the assignment header."
+        m = "Did not find " + markup_create_italic(END_HDR_FLAG) + " line in the assignment header."
         messages.append(m)
    
     if len(messages) > 0:
-        test_obj.message = markup_create_indent(markup_create_unlist(messages),1)
+        test_obj.message = markup_create_unlist(messages)
      
     return OK
 
@@ -115,7 +115,7 @@ def verify_email(email, line):
     fields = line.lower().split()
     for val in fields:
         if val.find(AUTHOR_TAG.lower()) == -1 and val.find("@") != -1:
-            line_email = val.replace("[","").replace("]","").replace("<","").replace(">","")
+            line_email = val.replace("[","").replace("]","").replace("<","").replace(">","").strip()
         
     return line_email.lower() == email.lower()
 

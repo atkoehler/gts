@@ -12,6 +12,7 @@ DEDUCTION_PER_GAFFE = 5
 LONG_LINE_COUNT = 80
 
 from galah.interact import *
+from system.utils import *
 
 ## 
 # @brief test function checks various style parts for the program
@@ -28,6 +29,8 @@ def test(locations, test_obj, source):
     OK = 0
     ERROR = -1
     
+    messages = []
+    
     # global variables existence sub test
     import modules.style.globalvars as globalvars
     name = "Global variable existence check"
@@ -35,14 +38,10 @@ def test(locations, test_obj, source):
     sub_test.name = name
     globals = globalvars.globals_exist(sub_test, locations[1], source)
     m = ""
-    
+    header = markup_create_bold("Global Variables") + ": "
     if globals is None:
-        m = "Global variables check not executed. Either the program does not compile or a required system program could not be found."
-        sub_test.score = -1 * DEDUCTION_PER_GAFFE
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
+        m = "The check for global variables could not be executed due to compilation error. Passing for now."
+        messages.append(header + m)
     else:
         for i in globals:
             m += i + ", "
@@ -52,10 +51,7 @@ def test(locations, test_obj, source):
                 m = "Global variable found: " + m
             elif len(globals) > 1:
                 m = "Global variables found: " + m
-            if test_obj.message == "":
-                test_obj.message += m
-            else:
-                test_obj.message += "\n\n" + m
+            messages.append(header + m)
     test_obj.parts.append(sub_test)
     
     
@@ -64,13 +60,11 @@ def test(locations, test_obj, source):
     name = "Comments exist in source code"
     sub_test = GalahTestPart()
     sub_test.name = name
-    ret = comments.comments_exist(sub_test, source)
+    ret = comments.comments_exist(sub_test, source)    
     if not ret:
-        m = "Did not find any comments in source code"
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
+        m = "Did not find any comments in source code."
+        header = markup_create_bold("Comments") + ": "
+        messages.append(header + m)
     test_obj.parts.append(sub_test)
     
     
@@ -81,6 +75,7 @@ def test(locations, test_obj, source):
     sub_test.name = name
     nums = linelength.long_check(sub_test, source)
     m = ""
+    header = markup_create_bold("Long Lines") + ": "
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
@@ -89,10 +84,7 @@ def test(locations, test_obj, source):
             m = "Exceeded " +str(LONG_LINE_COUNT)+ " characters on line: " + m
         elif len(nums) > 1:
             m = "Exceeded " +str(LONG_LINE_COUNT)+ " characters on lines: " + m
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
+        messages.append(header + m)
     test_obj.parts.append(sub_test)
     
     
@@ -106,15 +98,13 @@ def test(locations, test_obj, source):
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
+        header = markup_create_bold("Tabs in Source") + ": "
         m = m.strip().rstrip(',')
         if len(nums) == 1:
             m = "Discovered at least one tab character on line: " + m
         elif len(nums) > 1:
             m = "Discovered at least one tab character on lines: " + m
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
+        messages.append(header + m)
     test_obj.parts.append(sub_test)
     
         
@@ -128,15 +118,13 @@ def test(locations, test_obj, source):
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
+        header = markup_create_bold("Improper Conditionals") + ": "
         m = m.strip().rstrip(',')
         if len(nums) == 1:
             m = "Found improper boolean conditional expression. Such as one that compares to true--(var_name == true)--instead of simply using the boolean value--(var_name). Improper conditionals discovered on line: " + m
-        elif len(nums) > 1:
+        else: 
             m = "Found improper boolean conditional expressions. Such as one that compares to true--(var_name == true)--instead of simply using the boolean value--(var_name). Improper conditionals discovered on lines: " + m
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
+        messages.append(header + m)
     test_obj.parts.append(sub_test)
     
     
@@ -151,15 +139,13 @@ def test(locations, test_obj, source):
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
+        header = markup_create_bold("Curly Brace Issues") + ": "
         m = m.strip().rstrip(',')
         if len(nums) == 1:
             m = "Found multiple curly braces on line: " + m
         elif len(nums) > 1:
             m = "Found multiple curly braces on lines: " + m
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
+        messages.append(header + m)
     sub_test.score = -1 * DEDUCTION_PER_GAFFE * len(nums)
     test_obj.parts.append(sub_test)
     
@@ -173,24 +159,19 @@ def test(locations, test_obj, source):
     m = ""
     (ret, nums) = indentation.correct_indent(source)
     
+    header = markup_create_bold("Improper Indentation") + ": "
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
         m = m.strip().rstrip(',')
         if len(nums) == 1:
-            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, block begins after line: " + m
+            m = "Incorrect indentation using " + str(source.indent_size) + " spaces per indent level on line: " + m
         elif len(nums) > 1:
-            m = "Incorrect indentation using " + str(source.indent_size) + " spaces, blocks begin after lines: " + m
-        if test_obj.message == "":
-            test_obj.message += m
-        else:
-            test_obj.message += "\n\n" + m
+            m = "Incorrect indentation using " + str(source.indent_size) + " spaces per indent level on lines: " + m
+        messages.append(header + m)
     elif not ret:
         m = "Could not execute indentation check due to prior style errors."
-        if test_obj.message == "":
-            test_obj.message += m
-        elif m != "":
-            test_obj.message += "\n\n" + m
+        messages.append(header + m)
      
     # impose maximum penalty if test completely failed 
     if ret:
@@ -205,16 +186,18 @@ def test(locations, test_obj, source):
     for test in test_obj.parts:
         test_obj.score += test.score
     
+    m = ""
     # cap style deduction
     if abs(test_obj.score) > STYLE_PENALTY_MAX:
-        m = "Penalty of " + str(abs(test_obj.score)) + " exceeds maximum " \
-            "penalty of " + str(STYLE_PENALTY_MAX) + ", assessing maximum."
-        if test_obj.message == "":
-            test_obj.message = m + test_obj.message
-        else:
-            test_obj.message = m + "\n\n" + test_obj.message
+        m = "Penalty of " + str(abs(test_obj.score)) + " exceeds maximum " 
+        m += "penalty of " + str(STYLE_PENALTY_MAX) + ", assessing maximum.\n"
         test_obj.score = -1 * STYLE_PENALTY_MAX
-    
+   
+    # add any messages to test object
+    if len(messages) > 0:
+        test_obj.message = m + markup_create_unlist(messages)
+    else:
+        test_obj.message = m 
    
     return OK
 

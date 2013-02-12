@@ -21,6 +21,8 @@ COMPILER_ERR_FNAME = "compiler_errors.txt"
 PENALTY = 25
 INCLUDES_DIR = "system/include"
 
+from system.utils import *
+
 ## 
 # @brief test function checks compilation of the program
 # 
@@ -57,7 +59,7 @@ def test(locations, test_obj, source):
     ret_val = compile_single(source.file_loc, exe_path, harness_dir)
     
     # set test object message to message of compilation return value
-    test_obj.message = ret_val["message"]
+    test_obj.message = markup_create_indent(ret_val["message"], 1)
    
     # enforce penalty if needed 
     if not ret_val["success"]:

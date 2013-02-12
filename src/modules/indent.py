@@ -13,6 +13,8 @@ PENALTY = 25
 COMPILER = "g++"
 INCLUDES_DIR = "system/include"
 
+from system.utils import *
+
 ## 
 # @brief test function checks file name against a required name
 # 
@@ -36,7 +38,7 @@ def test(locations, test_obj, source):
     
     # set message to errors from indent if they exist and enforce penalty
     if not ret_val["errors"] is None:
-        test_obj.message = ret_val["errors"]
+        test_obj.message = markup_create_indent(ret_val["errors"], 1)
         test_obj.score = -1 * PENALTY
     elif not ret_val["success"]:
         test_obj.message = ret_val["message"]

@@ -70,9 +70,7 @@ def markup_convert_newline(line):
     
     line_split = line.split('\n')
     for (i, ind_line) in enumerate(line_split):
-        if len(ind_line) > 0:
-            if i+1 < len(line_split) and len(line_split[i+1]):
-                line_split[i] = ind_line + "  "
+        line_split[i] = ind_line + "  "
     
     return "\n".join(line_split)
 
@@ -100,5 +98,15 @@ def markup_create_unlist(lines):
     for (i, line) in enumerate(lines):
         lines[i] = "* " + line
 
-    return "\n".join(lines)
+    return "\n" + "\n".join(lines)
+
+def markup_create_bold(line):
+    "Turn the line into markdown emboldened string"
+    
+    return "**" + line + "**" 
+
+def markup_create_italic(line):
+    "Turn the line into markdown italicized string"
+    
+    return "*" + line + "*" 
 
