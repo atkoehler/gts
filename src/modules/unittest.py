@@ -162,7 +162,7 @@ def test(locations, test_obj, source, fn_name):
             test_obj.message = markup_create_header("Compile Errors\n", 4)
             test_obj.message += markup_create_indent(ret_val["message"], 1)
             test_obj.message += markup_create_header("Suggestions\n", 2)
-            test_obj.message += "The unit test did not compile. If you have not yet implemented this function, you may ignore this. If you have started implementing your function " + fn_name + " and are attempting to test it, make sure it has a proper definition. Check its:\n" + markup_create_indent(markup_create_unlist(["return type", "function name", "parameter types", "number of parameters"]), 1)
+            test_obj.message += "The unit test did not compile. If you have not yet implemented this function, you may ignore this. If you have started implementing your function " + fn_name + " and are attempting to test it, make sure it has a proper definition. Check its:\n" + markup_create_indent(markup_create_unlist(["return type", "function name", "parameter types", "number of parameters"]), 2)
             if made_working:
                 shutil.rmtree(working_dir)
             elif len(files_to_remove) > 0:
