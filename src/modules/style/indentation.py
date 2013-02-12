@@ -12,6 +12,17 @@ MIN_SPACING = 2
 MAX_SPACING = 6
 
 
+class SourceLine:
+    "A source line and its associated line number in the file"
+    
+    def __init__(self, num = 0, content = None):
+        if content is None:
+            content = ""
+        
+        self.num = num
+        self.content = content
+
+
 class Block:
     """
     Simple class that contains the properties of a indentation block.
@@ -67,13 +78,22 @@ def correct_indent(source):
     for cur_block in blocks:
         sp = cur_block.level * source.indent_size
         for (i, line) in enumerate(cur_block.lines):
-            if len(line.strip()) > 0 and sp != line.find(line.lstrip()[0]):
-                if i-1 >= 0:
-                    if cur_block.lines[i-1].find(";") != -1:
-                        if sp+source.indent_size != line.find(line.lstrip()[0]):
-                            bad_lines.append(cur_block.start_line)
-                else:
-                    bad_lines.append(cur_block.start_line)
+            strip_len = len(line.content.strip())
+            if strip_len > 0:
+                indent_amount = line.content.find(line.content.lstrip()[0])
+                if sp != indent_amount:
+                    if i-1 >= 0:
+                        prev = cur_block.lines[i-1].content
+                        if not (prev.strip() == "{" or prev.strip() == "}"):
+                            if prev.find(";") == -1:
+                                if sp+source.indent_size != indent_amount:
+                                    bad_lines.append(line.num)
+                            else:
+                                bad_lines.append(line.num)
+                        else:
+                            bad_lines.append(line.num)
+                    else:
+                        bad_lines.append(line.num)
     
     # test completed and return list of lines where bad indent blocks start
     return (True, sorted(list(set(bad_lines))))
@@ -127,7 +147,7 @@ def create_blocks(source):
 
         # add line to current level
         cur = indeces[-1]
-        blocks[cur].lines.append(line)
+        blocks[cur].lines.append(SourceLine(i+1, line))
 
         # determine if new level needs to be created
         if line.find("{") != -1:
