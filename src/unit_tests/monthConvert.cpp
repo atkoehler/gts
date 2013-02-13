@@ -67,7 +67,7 @@ void testMonthConvert(std::ofstream &harnessOutput)
     {
         cerr << "Calling monthConvert(\"" + s + "\")";
         cerr << "\t";
-        cerr << "Out of range exception thrown by: ";
+        cerr << "Out of Range exception thrown by: ";
         cerr << oor.what() << endl;
         
     }
