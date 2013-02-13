@@ -98,7 +98,7 @@ def markup_create_unlist(lines):
     for (i, line) in enumerate(lines):
         lines[i] = "* " + line
 
-    return "\n" + "\n".join(lines)
+    return "\n".join(lines)
 
 def markup_create_bold(line):
     "Turn the line into markdown emboldened string"
