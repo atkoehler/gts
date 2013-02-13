@@ -82,10 +82,11 @@ UNIT_DIR_NAME = "unit_tests"
 # @param test_obj the test object containing properties to fill out
 # @param source the source object containing name, location and content splits
 # @param fn_name name of the function to run unit test for
+# @param has_output whether function should have output, default is False
 #
 # @return 0 if test completed successfully, otherwise -1
 #
-def test(locations, test_obj, source, fn_name):
+def test(locations, test_obj, source, fn_name, has_output=False):
     import re
     OK = 0
     ERROR = -1
@@ -151,14 +152,41 @@ def test(locations, test_obj, source, fn_name):
     files_to_remove.append(unit_out)
     files_to_remove.append(errf)
     files_to_remove.append(outf)
-        
+       
+    # TODO: this probably should go in some sort of external file
+    exception_msg = {}
+    exception_handled = {}
+
+    # Out of Range exceptions
+    # string.at(int)
+    exception_msg["Out of Range"] = {}
+    s = "At least one exception was thrown by calling the at() member "
+    s += " function of a string with a value that is either negative or "
+    s += " greater than or equal to the size of the string. Check the value "
+    s += " passed with each invocation of the function at() in " + fn_name 
+    s += " as well as any functions " + fn_name + " calls."
+    exception_msg["Out of Range"]["basic_string::at"] = s
+    
+    # vector.at(int)
+    s = "At least one exception was thrown by calling the at() member "
+    s += " function of a vector. The function was provided a value that is "
+    s += " greater than or equal to the size of the vector or it was given a "
+    s += " negative value. Check the value "
+    s += " passed with each invocation of the function at() in " + fn_name 
+    s += " as well as any functions " + fn_name + " calls."
+    exception_msg["Out of Range"]["vector::_M_range_check"] = s
+    
+    # initially no exceptions have been handled
+    for key in exception_msg:
+        exception_handled[key] = {}
+        for what_key in exception_msg[key]:
+            exception_handled[key][what_key] = False
+    
     message = []
     suggestions = []
-    compiler_messages = []
-    output_messages = []
     run_messages = {}
-    at_exception_sug_exists = False
-    function_has_output = False
+    notifications = {}
+    contains_output = False
     # merge success
     if ret:
         # attempt compilation
@@ -206,21 +234,16 @@ def test(locations, test_obj, source, fn_name):
                     check_call([exe_path, unit_out], stdout=out_file, stderr=err_file)
         except SystemError as e:
             # create a notice about the abort throw and put in message
-            m = markup_create_header("Notice\n", 2)
-            m += "The " + fn_name + " unit test was aborted during execution. "
-            m += "If errors were output they will be displayed below and they "
-            m += "are a good starting point to determine why your code "
-            m += "crashed."
-            message.append(m)
+            m = "The " + fn_name + " unit test was aborted during execution "
+            m += "by the operating system. If any reason or trace was given "
+            m += "these may exist in the standard error message of the "
+            m += "specific call that was aborted. If the type of abort was "
+            m += "recognized there will be guidance in the Suggestions "
+            m += "section. The abort may have been caused by this function "
+            m += "or one that it calls."
+            notifications["abort"] = m
             
-            # create a suggestion about abort and put in suggestions
-            s = "The abort may have been caused by this function or any "
-            s += "function that it calls. If the functions that are called "
-            s += "are passing their respective tests then make sure " + fn_name
-            s += " is not calling another function with a bad value as one of "
-            s += "the parameters or not returning an improper value."
-            suggestions.append(s)
-            
+           
             # if seg fault was detected
             # TODO: this access is ugly and should be cleaned up
             if e[0][0] == -11:
@@ -230,6 +253,14 @@ def test(locations, test_obj, source, fn_name):
                 s += fn_name + " as well as any functions it invokes.\n"
                 s += markup_create_indent(markup_create_unlist(cl), 1)
                 suggestions.append(s)
+            else:
+                s = "The abort may have been caused by " + fn_name + " or any "
+                s += "function that it calls. If " + fn_name + " invokes a "
+                s += "function and that function passes its unit test then "
+                s += "make sure " + fn_name + " passes proper values to the "
+                s += "other function."
+                suggestions.append(s)
+         
         
         # put standard error in the message
         if len(open(errf).read()) > 0: 
@@ -250,20 +281,26 @@ def test(locations, test_obj, source, fn_name):
                     run_messages[key] += single_result
                 
                 error_split = errors.split("\n")
+                if len(error_split) > 0:
+                    m = "The " + fn_name + " unit test caught an exception "
+                    m += "thrown by " + fn_name + ". If the exception was "
+                    m += "recognized by our harness then more information "
+                    m += "will exist in the information for the invocation "
+                    m += "of the specific unit test that threw the exception. "
+                    m += "Additionally, there may be guidance in the "
+                    m += "Suggestions section of the feedback."
+                    notifications["exception"] = m
+
                 for exception in error_split:
-                    if exception.find("Out of Range") != -1:
-                        if exception.find("basic_string::at") != -1 and not at_exception_sug_exists:
-                            s = "At least one exception was thrown by calling "
-                            s += "the at() member function of a string with a "
-                            s += "value that is either negative or greater "
-                            s += "than or equal to the size of the string. "
-                            s += "Check the value passed with each "
-                            s += "invocation of the function at() in " 
-                            s += fn_name + " as well as any functions " 
-                            s += fn_name + " calls."
-                            at_exception_sug_exists = True
-                            suggestions.append(s)
-        
+                    for key in exception_msg:
+                        if exception.find(key) != -1:
+                            for what, sug in exception_msg[key].iteritems():
+                                if exception.find(what) != -1:
+                                    if not exception_handled[key][what]:
+                                        suggestions.append(sug)
+                                        exception_handled[key][what] = True
+                 
+                
         # put standard output in the message
         if len(open(outf).read()) > 0: 
             line = open(outf).read().rstrip("\n")
@@ -274,7 +311,7 @@ def test(locations, test_obj, source, fn_name):
                 lines = output.rstrip("\n").split("\n")
                 key = "Calling " + lines[0]
                 if len(lines) > 1:
-                    function_has_output = True
+                    contains_output = True
                     act_output = "\n".join(lines[1:])
                 
                     top = fn_name + " standard output\n"
@@ -315,14 +352,18 @@ def test(locations, test_obj, source, fn_name):
                     run_messages[key] += single_result
          
         # create a suggestion about the existence of output if some exists
-        if function_has_output: 
+        if not has_output and contains_output: 
             s = "The " + fn_name + " function should not contain any output."
+            suggestions.append(s)
+        elif has_output and not contains_output:
+            s = "The " + fn_name + " function should contain some output."
             suggestions.append(s)
        
         # create suggestion if any unit tests failed 
         if len(unit_out_contents) > 0:
             s = "You failed " + str(len(unit_out_contents.split('\n')))
-            s += " test cases. Start with the first test case in the unit test "
+            s += " test cases in addition to any that aborted or threw an "
+            s += "exception. Start with the first test case in the unit test "
             s += "output and try to fix it. Then look at the next. If you are "
             s += "confident with your fixes submit your latest work to test it."
             suggestions.append(s)
@@ -334,13 +375,23 @@ def test(locations, test_obj, source, fn_name):
             header = markup_create_indent(markup_create_header(key+"\n", 3),1)
             message.append(header + value)
          
-        # add suggestions section to message
+        # put notifications at top of message if there are any
+        if len(notifications) > 0:
+            top = markup_create_header("Notifications\n", 2)
+            notes = []
+            for (key, value) in notifications.iteritems():
+                head = markup_create_bold(key.upper())
+                head += ": " + value
+                notes.append(head)
+            m = markup_create_unlist(notes)
+            message = [top + m + "\n"] + message
+ 
+        # add suggestions section as last part of message
         if len(suggestions) > 0:
             m =  markup_create_header("Suggestions\n", 2)
             m += markup_create_unlist(suggestions)
             message.append(m)
-
-        
+         
         # if the message for this part is empty then it passes
         if len(message) == 0:
             test_obj.score = test_obj.max_score
