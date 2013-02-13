@@ -156,6 +156,9 @@ def test(locations, test_obj, source, fn_name):
     suggestions = []
     compiler_messages = []
     output_messages = []
+    run_messages = {}
+    at_exception_sug_exists = False
+    function_has_output = False
     # merge success
     if ret:
         # attempt compilation
@@ -175,7 +178,6 @@ def test(locations, test_obj, source, fn_name):
             s += " you may ignore the fact that this test did not compile."
             suggestions.append(s)
             s = "If you have started implementing your function " + fn_name
-A
             s += " and are attempting to test it, make sure it has a proper "
             s += "definition. Be sure to check its:\n"
             l = ["return type", "function name", 
@@ -209,7 +211,6 @@ A
             m += "If errors were output they will be displayed below and they "
             m += "are a good starting point to determine why your code "
             m += "crashed."
-A
             message.append(m)
             
             # create a suggestion about abort and put in suggestions
@@ -221,7 +222,6 @@ A
             suggestions.append(s)
             
             # if seg fault was detected
-A
             # TODO: this access is ugly and should be cleaned up
             if e[0][0] == -11:
                 cl = ["return value", "values of each parameter"]
@@ -233,59 +233,60 @@ A
         
         # put standard error in the message
         if len(open(errf).read()) > 0: 
-            m = fn_name + " standard error\n"
-            m = markup_create_indent(markup_create_header(m, 4), 1)
             lines = open(errf).read().rstrip("\n").split("\n")
-            combine = []
             for fail_test in lines:
                 splits = fail_test.split("\t")
-                header = splits[0]
-                results = splits[1:]
-                rlist = markup_create_unlist(results)
-                single_result = markup_create_header(header, 3)
-                single_result += rlist
+                key = splits[0] 
+                errors = "\n".join(splits[1:])
+                top = fn_name + " standard error\n"
+                single_result = markup_create_header(top, 4)
                 single_result = markup_create_indent(single_result, 2)
-                combine.append(single_result)  
-            message.append(m + "\n".join(combine))
-            for exception in combine:
-                if exception.find("Out of Range") != -1:
-                    if exception.find("basic_string::at") != -1:
-                        s = "At least one exception was thrown by calling "
-                        s += "the at() "
-                        s += "member function of a string with a value that "
-                        s += "is either negative or greater than or equal to "
-                        s += "the size of the string. Check the value "
-                        s += "passed with each "
-                        s += "invocation of the function at() in " + fn_name
-                        s += " as well as any functions " + fn_name + " calls."
-                        at_exception_sug_exists = False
-                        for current_suggestion in suggestions:
-                            if current_suggestion == s:
-                                at_exception_sug_exists = True
-                                break
-                        if not at_exception_sug_exists:
+                single_result += markup_create_indent(errors, 3)
+                single_result += "\n"
+                key = key.strip()
+                if key not in run_messages:
+                    run_messages[key] = single_result
+                else:
+                    run_messages[key] += single_result
+                
+                error_split = errors.split("\n")
+                for exception in error_split:
+                    if exception.find("Out of Range") != -1:
+                        if exception.find("basic_string::at") != -1 and not at_exception_sug_exists:
+                            s = "At least one exception was thrown by calling "
+                            s += "the at() member function of a string with a "
+                            s += "value that is either negative or greater "
+                            s += "than or equal to the size of the string. "
+                            s += "Check the value passed with each "
+                            s += "invocation of the function at() in " 
+                            s += fn_name + " as well as any functions " 
+                            s += fn_name + " calls."
+                            at_exception_sug_exists = True
                             suggestions.append(s)
         
         # put standard output in the message
         if len(open(outf).read()) > 0: 
-            m = fn_name + " standard output\n"
-            m = markup_create_indent(markup_create_header(m, 4), 1)
             line = open(outf).read().rstrip("\n")
             split_on = "Calling "
             pattern = re.compile(split_on)
             per_call = pattern.split(line)
-            combine = []
             for output in per_call:
                 lines = output.rstrip("\n").split("\n")
-                header = lines[0] + "\n"
+                key = "Calling " + lines[0]
                 if len(lines) > 1:
+                    function_has_output = True
                     act_output = "\n".join(lines[1:])
                 
-                    single_result = markup_create_header(header, 3)
+                    top = fn_name + " standard output\n"
+                    single_result = markup_create_header(top, 4)
                     single_result = markup_create_indent(single_result, 2)
                     single_result += markup_create_indent(act_output, 3)
-                    combine.append(single_result)
-            message.append(m + "\n".join(combine)) 
+                    single_result += "\n"
+                    key = key.strip()
+                    if key not in run_messages:
+                        run_messages[key] = single_result
+                    else:
+                        run_messages[key] += single_result
          
         # if the unit test had any output then add them to message 
         if os.path.isfile(unit_out):
@@ -294,27 +295,27 @@ A
             unit_out_contents = ""       
         
         if len(unit_out_contents) > 0:
-            m = fn_name + " unit test output\n"
-            m = markup_create_header(m, 4)
             con_list = unit_out_contents.split("\n")            
             combine = []
             for fail_test in con_list:
                 splits = fail_test.split("\t")
-                header = splits[0] + "\n"
+                key = splits[0] 
                 results = splits[1:]
                 rlist = markup_create_unlist(results)
-                single_result = markup_create_header(header, 3)
-                single_result += markup_create_indent(rlist, 2)
-                combine.append(single_result)  
-                      
-            for (i, item) in enumerate(combine):
-                combine[i] = markup_create_indent(item, 2)
-            
-            m = m + "\n".join(combine)
-            message.append(m)
-        
+
+                top = fn_name + " unit test output\n"
+                single_result = markup_create_header(top, 4)
+                single_result = markup_create_indent(single_result, 2)
+                single_result += markup_create_indent(rlist, 3)
+                single_result += "\n"
+                key = key.strip()
+                if key not in run_messages:
+                    run_messages[key] = single_result
+                else:
+                    run_messages[key] += single_result
+         
         # create a suggestion about the existence of output if some exists
-        if len(open(outf).read()) > 0: 
+        if function_has_output: 
             s = "The " + fn_name + " function should not contain any output."
             suggestions.append(s)
        
@@ -323,9 +324,16 @@ A
             s = "You failed " + str(len(unit_out_contents.split('\n')))
             s += " test cases. Start with the first test case in the unit test "
             s += "output and try to fix it. Then look at the next. If you are "
-            s += "confident with your fixes submit your latest work."
+            s += "confident with your fixes submit your latest work to test it."
             suggestions.append(s)
-        
+       
+        # add individual testing output to the message
+        import operator
+        m_sorted = sorted(run_messages.iteritems(), key=operator.itemgetter(0))
+        for (key, value) in m_sorted:
+            header = markup_create_indent(markup_create_header(key+"\n", 3),1)
+            message.append(header + value)
+         
         # add suggestions section to message
         if len(suggestions) > 0:
             m =  markup_create_header("Suggestions\n", 2)
