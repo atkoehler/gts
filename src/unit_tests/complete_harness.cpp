@@ -14,6 +14,7 @@ void testMonthConvert(std::ofstream &harnessOutput)
         std::string s = strm.str();
         try
         {
+            cout << "Calling monthConvert(\"" + s + "\")" << endl;
             ret_val = monthConvert(s);
             proper = answers[i-1] == ret_val;
             if (!proper)
@@ -26,18 +27,28 @@ void testMonthConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
 
                 harnessOutput << "Received: ";
-                harnessOutput << monthConvert(s) << std::endl;
+                harnessOutput << ret_val << std::endl;
             }
+        }
+        catch(out_of_range& oor)
+        {
+            cerr << "Calling monthConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "Out of Range exception thrown by: ";
+            cerr << oor.what() << endl;
+            
         }
         catch(...)
         {
-            cerr << "Exception thrown ";
-            cerr << "calling monthConvert(\"" + s + "\")" << endl;
+            cerr << "Calling monthConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "exception thrown" << endl;
         }
     }
     std::string s = "0";
     try
     {
+        cout << "Calling monthConvert(\"" + s + "\")" << endl;
         ret_val = monthConvert(s);
         proper = invalid == ret_val;
         if (!proper)
@@ -50,13 +61,22 @@ void testMonthConvert(std::ofstream &harnessOutput)
             harnessOutput << "\t";
             
             harnessOutput << "Received: ";
-            harnessOutput << monthConvert(s) << std::endl;
+            harnessOutput << ret_val << std::endl;
         }
+    }
+    catch(out_of_range& oor)
+    {
+        cerr << "Calling monthConvert(\"" + s + "\")";
+        cerr << "\t";
+        cerr << "Out of range exception thrown by: ";
+        cerr << oor.what() << endl;
+        
     }
     catch(...)
     {
-        cerr << "Exception thrown ";
-        cerr << "calling monthConvert(\"" + s + "\")" << endl;
+        cerr << "Calling monthConvert(\"" + s + "\")";
+        cerr << "\t";
+        cerr << "exception thrown" << endl;
     }
 }
 
@@ -89,8 +109,16 @@ void testDayConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
                 
                 harnessOutput << "Received: ";
-                harnessOutput << dayConvert(s) << std::endl;
+                harnessOutput << ret_val << std::endl;
             }
+        }
+        catch(out_of_range& oor)
+        {
+            cerr << "Calling dayConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "Out of Range exception thrown by: ";
+            cerr << oor.what() << endl;
+            
         }
         catch(...)
         {
@@ -127,9 +155,17 @@ void testYearConvert(std::ofstream &harnessOutput)
                     harnessOutput << "\t";
                     
                     harnessOutput << "Received: ";
-                    harnessOutput << yearConvert(n) << std::endl;
+                    harnessOutput << ret_val << std::endl;
                 }
-            } 
+            }
+            catch(out_of_range& oor)
+            {
+                cerr << "Calling yearConvert(\"" + n + "\")";
+                cerr << "\t";
+                cerr << "Out of Range exception thrown by: ";
+                cerr << oor.what() << endl;
+                
+            }
             catch(...)
             {
                 cerr << "Exception thrown ";
@@ -151,8 +187,16 @@ void testYearConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
                 
                 harnessOutput << "Received: ";
-                harnessOutput << yearConvert(s) << std::endl;
+                harnessOutput << ret_val << std::endl;
             }
+        }
+        catch(out_of_range& oor)
+        {
+            cerr << "Calling yearConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "Out of Range exception thrown by: ";
+            cerr << oor.what() << endl;
+            
         }
         catch(...)
         {
@@ -193,8 +237,16 @@ void testDateConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
 
                 harnessOutput << "Received: ";
-                harnessOutput << dateConvert(queries[i]) << std::endl;
+                harnessOutput << ret_val << std::endl;
             }
+        }
+        catch(out_of_range& oor)
+        {
+            cerr << "Calling dateConvert(\"" + queries[i] + "\")";
+            cerr << "\t";
+            cerr << "Out of Range exception thrown by: ";
+            cerr << oor.what() << endl;
+            
         }
         catch(...)
         {

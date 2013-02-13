@@ -1,3 +1,4 @@
+
 void testYearConvert(std::ofstream &harnessOutput)
 {
     bool proper = false;
@@ -25,9 +26,17 @@ void testYearConvert(std::ofstream &harnessOutput)
                     harnessOutput << "\t";
                     
                     harnessOutput << "Received: ";
-                    harnessOutput << yearConvert(n) << std::endl;
+                    harnessOutput << ret_val << std::endl;
                 }
-            } 
+            }
+            catch(out_of_range& oor)
+            {
+                cerr << "Calling yearConvert(\"" + n + "\")";
+                cerr << "\t";
+                cerr << "Out of Range exception thrown by: ";
+                cerr << oor.what() << endl;
+                
+            }
             catch(...)
             {
                 cerr << "Exception thrown ";
@@ -49,8 +58,16 @@ void testYearConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
                 
                 harnessOutput << "Received: ";
-                harnessOutput << yearConvert(s) << std::endl;
+                harnessOutput << ret_val << std::endl;
             }
+        }
+        catch(out_of_range& oor)
+        {
+            cerr << "Calling yearConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "Out of Range exception thrown by: ";
+            cerr << oor.what() << endl;
+            
         }
         catch(...)
         {
@@ -59,7 +76,6 @@ void testYearConvert(std::ofstream &harnessOutput)
         }
     }
 }
-
 
 int main(int argc, char **argv)
 {

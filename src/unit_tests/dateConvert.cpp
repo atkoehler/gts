@@ -30,8 +30,16 @@ void testDateConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
 
                 harnessOutput << "Received: ";
-                harnessOutput << dateConvert(queries[i]) << std::endl;
+                harnessOutput << ret_val << std::endl;
             }
+        }
+        catch(out_of_range& oor)
+        {
+            cerr << "Calling dateConvert(\"" + queries[i] + "\")";
+            cerr << "\t";
+            cerr << "Out of Range exception thrown by: ";
+            cerr << oor.what() << endl;
+            
         }
         catch(...)
         {
@@ -40,7 +48,6 @@ void testDateConvert(std::ofstream &harnessOutput)
         }
     }
 }
-
 
 
 int main(int argc, char **argv)

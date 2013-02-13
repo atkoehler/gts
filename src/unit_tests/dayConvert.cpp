@@ -28,8 +28,16 @@ void testDayConvert(std::ofstream &harnessOutput)
                 harnessOutput << "\t";
                 
                 harnessOutput << "Received: ";
-                harnessOutput << dayConvert(s) << std::endl;
+                harnessOutput << ret_val << std::endl;
             }
+        }
+        catch(out_of_range& oor)
+        {
+            cerr << "Calling dayConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "Out of Range exception thrown by: ";
+            cerr << oor.what() << endl;
+            
         }
         catch(...)
         {
@@ -38,7 +46,6 @@ void testDayConvert(std::ofstream &harnessOutput)
         }
     }
 }
-
 
 
 int main(int argc, char **argv)
