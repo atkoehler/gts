@@ -1,4 +1,3 @@
-
 void testYearConvert(std::ofstream &harnessOutput)
 {
     bool proper = false;
@@ -39,8 +38,9 @@ void testYearConvert(std::ofstream &harnessOutput)
             }
             catch(...)
             {
-                cerr << "Exception thrown ";
-                cerr << "calling yearConvert(\"" + n + "\")";
+                cerr << "Calling yearConvert(\"" + n + "\")";
+                cerr << "\t";
+                cerr << "exception thrown" << endl;
             }
         }
                 
@@ -71,8 +71,9 @@ void testYearConvert(std::ofstream &harnessOutput)
         }
         catch(...)
         {
-            cerr << "Exception thrown ";
-            cerr << "calling yearConvert(\"" + s + "\")";
+            cerr << "Calling yearConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "exception thrown" << endl;
         }
     }
 }

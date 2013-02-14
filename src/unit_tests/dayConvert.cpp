@@ -1,4 +1,3 @@
-
 void testDayConvert(std::ofstream &harnessOutput)
 {
     bool proper = false;
@@ -41,12 +40,12 @@ void testDayConvert(std::ofstream &harnessOutput)
         }
         catch(...)
         {
-            cerr << "Exception thrown ";
-            cerr << "calling dayConvert(\"" + s + "\")";
+            cerr << "Calling dayConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "exception thrown" << endl;
         }
     }
 }
-
 
 int main(int argc, char **argv)
 {

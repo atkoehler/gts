@@ -1,4 +1,3 @@
-
 void testDateConvert(std::ofstream &harnessOutput)
 {
     bool proper = false;
@@ -43,8 +42,9 @@ void testDateConvert(std::ofstream &harnessOutput)
         }
         catch(...)
         {
-            cerr << "Exception thrown ";
-            cerr << "calling dateConvert(\"" + queries[i] + "\")";
+            cerr << "Calling dateConvert(\"" + queries[i] + "\")";
+            cerr << "\t";
+            cerr << "exception thrown" << endl;
         }
     }
 }

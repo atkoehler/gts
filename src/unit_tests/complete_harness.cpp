@@ -122,8 +122,9 @@ void testDayConvert(std::ofstream &harnessOutput)
         }
         catch(...)
         {
-            cerr << "Exception thrown ";
-            cerr << "calling dayConvert(\"" + s + "\")";
+            cerr << "Calling dayConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "exception thrown" << endl;
         }
     }
 }
@@ -168,8 +169,9 @@ void testYearConvert(std::ofstream &harnessOutput)
             }
             catch(...)
             {
-                cerr << "Exception thrown ";
-                cerr << "calling yearConvert(\"" + n + "\")";
+                cerr << "Calling yearConvert(\"" + n + "\")";
+                cerr << "\t";
+                cerr << "exception thrown" << endl;
             }
         }
                 
@@ -200,8 +202,9 @@ void testYearConvert(std::ofstream &harnessOutput)
         }
         catch(...)
         {
-            cerr << "Exception thrown ";
-            cerr << "calling yearConvert(\"" + s + "\")";
+            cerr << "Calling yearConvert(\"" + s + "\")";
+            cerr << "\t";
+            cerr << "exception thrown" << endl;
         }
     }
 }
@@ -250,8 +253,9 @@ void testDateConvert(std::ofstream &harnessOutput)
         }
         catch(...)
         {
-            cerr << "Exception thrown ";
-            cerr << "calling dateConvert(\"" + queries[i] + "\")";
+            cerr << "Calling dateConvert(\"" + queries[i] + "\")";
+            cerr << "\t";
+            cerr << "exception thrown" << endl;
         }
     }
 }
