@@ -10,6 +10,7 @@
 DEDUCTION_PER_GAFFE = 5
 WORKING_DIR_NAME = "working"
 COMPILER = "g++"
+INCLUDES_DIR = "system/include"
 
 ## 
 # @brief sub test to check whether global variables exist in the program
@@ -51,11 +52,12 @@ def globals_exist(test, harness_dir, source):
         from system.utils import check_call
 
         # compile the object file
+        # set up path to includes directory
+        include_path = os.path.join(harness_dir, INCLUDES_DIR)
         object_file = source.name[0:source.name.find(".")] + ".o"
         obj_loc = os.path.join(working_dir, object_file)
         files_to_remove.append(obj_loc)
-        cmd = " ".join([gpp, "-o", obj_loc, source.file_loc])
-        check_call([gpp, "-o", obj_loc, source.file_loc], 
+        check_call([gpp, "-o", obj_loc, "-I", include_path, source.file_loc], 
                    stdout=FNULL, stderr=FNULL)
         
         # get object symbols
