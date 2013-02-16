@@ -11,8 +11,9 @@
 # @requires requires the altersource module to replace source code
 #
 class UnitTest:
-    def __init__(self, include_stmts=None, test_file=None, 
+    def __init__(self, fn_name, include_stmts=None, test_file=None, 
                              unit_harness=None, merged_file=None):
+        self.fn_name = fn_name
         self.include_stmts = include_stmts
         self.test_file = test_file
         self.unit_harness = unit_harness
@@ -41,6 +42,7 @@ class UnitTest:
         # TODO: eliminate module to module dependency
         import modules.altersource as altersource
         altersource.replace_source(stud_contents, "int main", "int testfile_main")
+        altersource.replace_source(harness_contents, "STUDENT_FUNC_NAME", self.fn_name)
         
         # output all the files to a merged file
         with open(merge_loc, 'w') as merge_file:
@@ -86,7 +88,8 @@ UNIT_DIR_NAME = "unit_tests"
 #
 # @return 0 if test completed successfully, otherwise -1
 #
-def test(locations, test_obj, source, fn_name, has_output=False):
+def test(locations, test_obj, source, fn_name, 
+                    has_output=False, has_input=False):
     import re
     OK = 0
     ERROR = -1
@@ -123,7 +126,7 @@ def test(locations, test_obj, source, fn_name, has_output=False):
         return OK
     
     # create unit testing file
-    unit = UnitTest()
+    unit = UnitTest(fn_name)
    
     # TODO: make sure all the paths and files exist before accessing/using 
     # set up path to unit tests directory
@@ -147,11 +150,15 @@ def test(locations, test_obj, source, fn_name, has_output=False):
     
     # set up paths for unit test output
     unit_out = os.path.join(working_dir, "unit_test_output.txt")
+    unit_err = os.path.join(working_dir, "unit_test_errors.txt")
     errf = os.path.join(working_dir, "test_program_err.txt")   
     outf = os.path.join(working_dir, "test_program_out.txt")   
+    inpf = os.path.join(working_dir, "test_input.txt")   
     files_to_remove.append(unit_out)
+    files_to_remove.append(unit_err)
     files_to_remove.append(errf)
     files_to_remove.append(outf)
+    files_to_remove.append(inpf)
        
     # TODO: this probably should go in some sort of external file
     exception_msg = {}
@@ -186,6 +193,7 @@ def test(locations, test_obj, source, fn_name, has_output=False):
     suggestions = []
     run_messages = {}
     notifications = {}
+    unit_fail = set()
     contains_output = False
     # merge success
     if ret:
@@ -231,8 +239,20 @@ def test(locations, test_obj, source, fn_name, has_output=False):
         try:
             with open(outf, 'w') as out_file:
                 with open(errf, 'w') as err_file:
-                    check_call([exe_path, unit_out], stdout=out_file, stderr=err_file)
+                    if has_input:
+                        inputFile = open(inpf, 'w+')
+                        inputFile.write("OverwriteMe")
+                        inputFile.close()
+                        with open(inpf, 'r') as inp_file:
+                            check_call([exe_path, unit_out, unit_err, inpf], 
+                               stdout=out_file, stderr=err_file, stdin=inp_file)
+                    else:
+                        check_call([exe_path, unit_out, unit_err], 
+                           stdout=out_file, stderr=err_file)
+        
         except SystemError as e:
+            unit_fail.add("SystemError")
+            
             # create a notice about the abort throw and put in message
             m = "The " + fn_name + " unit test was aborted during execution "
             m += "by the operating system. If any reason or trace was given "
@@ -262,19 +282,26 @@ def test(locations, test_obj, source, fn_name, has_output=False):
                 suggestions.append(s)
          
         
-        # put standard error in the message
-        if len(open(errf).read()) > 0: 
-            lines = open(errf).read().rstrip("\n").split("\n")
+        # if the unit test had any output then add them to message 
+        if os.path.isfile(unit_err):
+            unit_err_contents = open(unit_err).read().rstrip('\n')
+        else:
+            unit_err_contents = ""       
+ 
+        # put unit test errors in the message
+        if len(unit_err_contents) > 0: 
+            lines = unit_err_contents.rstrip("\n").split("\n")
             for fail_test in lines:
                 splits = fail_test.split("\t")
                 key = splits[0] 
                 errors = "\n".join(splits[1:])
-                top = fn_name + " standard error\n"
+                top = fn_name + " unit test error\n"
                 single_result = markup_create_header(top, 4)
                 single_result = markup_create_indent(single_result, 2)
                 single_result += markup_create_indent(errors, 3)
                 single_result += "\n"
                 key = key.strip()
+                unit_fail.add(key)
                 if key not in run_messages:
                     run_messages[key] = single_result
                 else:
@@ -299,31 +326,6 @@ def test(locations, test_obj, source, fn_name, has_output=False):
                                     if not exception_handled[key][what]:
                                         suggestions.append(sug)
                                         exception_handled[key][what] = True
-                 
-                
-        # put standard output in the message
-        if len(open(outf).read()) > 0: 
-            line = open(outf).read().rstrip("\n")
-            split_on = "Calling "
-            pattern = re.compile(split_on)
-            per_call = pattern.split(line)
-            for output in per_call:
-                lines = output.rstrip("\n").split("\n")
-                key = "Calling " + lines[0]
-                if len(lines) > 1:
-                    contains_output = True
-                    act_output = "\n".join(lines[1:])
-                
-                    top = fn_name + " standard output\n"
-                    single_result = markup_create_header(top, 4)
-                    single_result = markup_create_indent(single_result, 2)
-                    single_result += markup_create_indent(act_output, 3)
-                    single_result += "\n"
-                    key = key.strip()
-                    if key not in run_messages:
-                        run_messages[key] = single_result
-                    else:
-                        run_messages[key] += single_result
          
         # if the unit test had any output then add them to message 
         if os.path.isfile(unit_out):
@@ -346,11 +348,50 @@ def test(locations, test_obj, source, fn_name, has_output=False):
                 single_result += markup_create_indent(rlist, 3)
                 single_result += "\n"
                 key = key.strip()
+                unit_fail.add(key)
                 if key not in run_messages:
                     run_messages[key] = single_result
                 else:
                     run_messages[key] += single_result
-         
+        
+
+        
+        # put standard output in the msg if unit testing had output or error
+        if len(open(outf).read()) > 0: 
+            line = open(outf).read().rstrip("\n")
+            split_on = "Calling "
+            pattern = re.compile(split_on)
+            per_call = pattern.split(line)
+            for output in per_call:
+                lines = output.rstrip("\n").split("\n")
+                key = "Calling " + lines[0]
+                if len(lines) > 1:
+                    contains_output = True
+                    
+                    act_output = "\n".join(lines[1:])
+                     
+                    top = fn_name + " standard output\n"
+                    single_result = markup_create_header(top, 4)
+                    single_result = markup_create_indent(single_result, 2)
+                    single_result += markup_create_indent(act_output, 3)
+                    single_result += "\n"
+                    key = key.strip()
+                    
+                    # if the case hasn't been flagged for failure, do so
+                    # if output is not expected for this function
+                    if not has_output and contains_output:
+                        unit_fail.add(key)
+                    
+                    # only add output if key already exists since it will
+                    # be created by unit_error or unit_out
+                    if key in unit_fail:
+                        if key in run_messages:
+                            run_messages[key] += single_result
+                        else:
+                            run_messages[key] = single_result
+        
+        # TODO: insert standard error in similar fashion to standard out
+        
         # create a suggestion about the existence of output if some exists
         if not has_output and contains_output: 
             s = "The " + fn_name + " function should not contain any output."
@@ -360,11 +401,12 @@ def test(locations, test_obj, source, fn_name, has_output=False):
             suggestions.append(s)
        
         # create suggestion if any unit tests failed 
-        if len(unit_out_contents) > 0:
-            s = "You failed " + str(len(unit_out_contents.split('\n')))
-            s += " test cases in addition to any that aborted or threw an "
-            s += "exception. Start with the first test case in the unit test "
-            s += "output and try to fix it. Then look at the next. If you are "
+        if len(run_messages) > 0:
+            s = "You failed " + str(len(run_messages))
+            s += " test cases. Additionally if any exceptions or aborts were "
+            s += "thrown then most likely not all test cases were executed. "
+            s += "Start with the first test case that failed and try to fix "
+            s += "it. Then look at the next. If you are "
             s += "confident with your fixes submit your latest work to test it."
             suggestions.append(s)
        
@@ -392,8 +434,8 @@ def test(locations, test_obj, source, fn_name, has_output=False):
             m += markup_create_unlist(suggestions)
             message.append(m)
          
-        # if the message for this part is empty then it passes
-        if len(message) == 0:
+        # if unit fail set is empty
+        if len(unit_fail) == 0:
             test_obj.score = test_obj.max_score
         else:
             test_obj.score = 0
