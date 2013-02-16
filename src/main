@@ -160,20 +160,24 @@ if source_exist:
     
     name = "Functions Unit Test"
     if name in config.actions:
-        functions = ["monthConvert", "dayConvert", "yearConvert", "dateConvert"]
+        #functions = ["monthConvert", "dayConvert", "yearConvert", "dateConvert"]
+        functions = ["setupUnsolvedPhrase", "updateUnsolvedPhrase", 
+                     "getNewGuess"]
+        function_output = [False, False, True]
+        function_input = [False, False, True]
                
         for (i, fn) in enumerate(functions):
             # create test object
             t = GalahTest()
             t.name = fn + " unit test"
             if i % 2 == 0:
-                t.max_score = 1
+                t.max_score = 25
             else:
-                t.max_score = 2
+                t.max_score = 25
          
             # run test
             import modules.unittest as unittest
-            completed = unittest.test((config.testables_directory, config.harness_directory), t, source, fn)
+            completed = unittest.test((config.testables_directory, config.harness_directory), t, source, fn, function_output[i], function_input[i])
         
             # add test to result
             if completed == OK:
