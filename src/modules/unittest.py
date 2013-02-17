@@ -1,9 +1,9 @@
 ## 
 # @file modules/unittest.py
 # @author Adam Koehler
-# @date February 8, 2013
+# @date February 16, 2013
 #
-# @brief Provides rudimentary means to unit test
+# @brief Provides means to unit test
 #
 
 ##
@@ -354,8 +354,6 @@ def test(locations, test_obj, source, fn_name,
                 else:
                     run_messages[key] += single_result
         
-
-        
         # put standard output in the msg if unit testing had output or error
         if len(open(outf).read()) > 0: 
             line = open(outf).read().rstrip("\n")
@@ -389,8 +387,6 @@ def test(locations, test_obj, source, fn_name,
                             run_messages[key] += single_result
                         else:
                             run_messages[key] = single_result
-        
-        # TODO: insert standard error in similar fashion to standard out
         
         # create a suggestion about the existence of output if some exists
         if not has_output and contains_output: 
