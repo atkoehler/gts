@@ -35,8 +35,6 @@ class UnitTest:
             return False
         if not os.path.isfile(self.unit_main):
             return False
-        if not os.path.isfile(merge_loc):
-            return False
         
         # grab contents of files        
         includes = open(inc_stmts).read().split('\n')
