@@ -12,21 +12,36 @@
 #
 class UnitTest:
     def __init__(self, fn_name, include_stmts=None, test_file=None, 
-                             unit_harness=None, merged_file=None):
+                             unit_harness=None, unit_main=None,
+                             merged_file=None):
         self.fn_name = fn_name
         self.include_stmts = include_stmts
         self.test_file = test_file
         self.unit_harness = unit_harness
+        self.unit_main = unit_main
         self.merged_file = merged_file
     
-    def create_unit(self, inc_stmts, unit_harness, merge_loc, source, harness):
+    def create_unit(self, inc_stmts, unit_harness, unit_main,
+                    merge_loc, source, harness):
+        import os
         self.include_stmts = inc_stmts
-        self.test_file = source.file_loc
         self.unit_harness = unit_harness
+        self.unit_main = unit_main
+        self.test_file = source.file_loc
        
-        # grab contents of files 
+        if not os.path.isfile(self.include_stmts):
+            return False
+        if not os.path.isfile(self.unit_harness):
+            return False
+        if not os.path.isfile(self.unit_main):
+            return False
+        if not os.path.isfile(merge_loc):
+            return False
+        
+        # grab contents of files        
         includes = open(inc_stmts).read().split('\n')
         harness_contents = open(unit_harness).read().split('\n')
+        main_contents = open(unit_main).read().split('\n')
 
         # indent contents of test file prior to getting contents
         # TODO: re-enable once indent command exists on the system
@@ -55,6 +70,10 @@ class UnitTest:
             merge_file.write("\n")
             
             for line in harness_contents:
+                merge_file.write(line+"\n")
+            merge_file.write("\n")
+
+            for line in main_contents:
                 merge_file.write(line+"\n")
             merge_file.write("\n")
         
@@ -137,16 +156,16 @@ def test(locations, test_obj, source, fn_name,
     
     # set up path to harness C++ file
     unit_filename = fn_name + ".cpp"
-    unit_harness = os.path.join(unit_dir, unit_filename)
-    unit_harness_path = os.path.join(unit_dir, unit_harness)
+    unit_test_path = os.path.join(unit_dir, unit_filename)
+    unit_main_path = os.path.join(unit_dir, "main.cpp")
     
     # set up path to testing file
     merged_path = os.path.join(working_dir, TEST_FILE_NM)
     files_to_remove.append(merged_path)
     
     # create the unit
-    ret = unit.create_unit(inc_stmt_path, unit_harness_path, merged_path, 
-                     source, harness_dir)
+    ret = unit.create_unit(inc_stmt_path, unit_test_path, unit_main_path,
+                           merged_path, source, harness_dir)
     
     # set up paths for unit test output
     unit_out = os.path.join(working_dir, "unit_test_output.txt")
