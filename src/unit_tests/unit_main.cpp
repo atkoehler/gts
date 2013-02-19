@@ -1,4 +1,4 @@
-/// @file unit_tests/main.cpp
+/// @file unit_tests/unit_main.cpp
 /// @brief provide a main function for the unit test harness
 /// 
 ///         takes 2 or 3 command line arguments:

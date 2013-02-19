@@ -157,7 +157,7 @@ def test(locations, test_obj, source, fn_name,
     # set up path to harness C++ file
     unit_filename = fn_name + ".cpp"
     unit_test_path = os.path.join(unit_dir, unit_filename)
-    unit_main_path = os.path.join(unit_dir, "main.cpp")
+    unit_main_path = os.path.join(unit_dir, "unit_main.cpp")
     
     # set up path to testing file
     merged_path = os.path.join(working_dir, TEST_FILE_NM)
