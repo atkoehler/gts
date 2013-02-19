@@ -214,8 +214,12 @@ def test(locations, test_obj, source, fn_name,
             s += " you may ignore the fact that this test did not compile."
             suggestions.append(s)
             s = "If you have started implementing your function " + fn_name
-            s += " and are attempting to test it, make sure it has a proper "
-            s += "definition. Be sure to check its:\n"
+            s += " and are attempting to test it: Make sure you fix all "
+            s += "compile errors before submission. If yours is compiling, "
+            s += "make sure " + fn_name + " has a proper definition "
+            s += "as we cannot invoke the function from the specification "
+            s += " if you are defining it differently than we expect. "
+            s += "Be sure to check its:\n"
             l = ["return type", "function name", 
                  "parameter types", "number of parameters"] 
             l_m = markup_create_indent(markup_create_unlist(l), 2)
