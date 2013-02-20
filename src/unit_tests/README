@@ -14,3 +14,4 @@ Every unit test is nearly identical. You must define or change a few things:
    4) define what goes in the input vector if warranted
    5) update the invocations to the generic STUDENT_FUNC_NAME 
         so that proper amount and types of parameters are utilized
+   6) update the includes.txt file to contain any additional libraries needed
