@@ -84,6 +84,7 @@ import os
 import shutil
 from modules.compilation import compile_single
 from system.utils import *
+from system.procs import *
 from galah.interact import *
 from modules.unittest import *
 
@@ -93,6 +94,7 @@ UNIT_TEST_DIR = "unit_tests"
 INCLUDE_LINES = "includes.txt"
 TEST_FILE_NM = "testfile.cpp"
 UNIT_DIR_NAME = "unit_tests"
+TIMEOUT = 10
 
 ## 
 # @brief test function runs the unit test
@@ -260,6 +262,8 @@ def test(locations, test_obj, source, fn_name,
         # run the unit test 
         # TODO: implement termination of process if it takes too long
         try:
+            # create a task for execution
+            t = Task(TIMEOUT)
             with open(outf, 'w') as out_file:
                 with open(errf, 'w') as err_file:
                     inputFile = open(inpf, 'w+')
@@ -267,10 +271,10 @@ def test(locations, test_obj, source, fn_name,
                     inputFile.close()
                     with open(inpf, 'r') as inp_file:
                         if has_input:
-                            check_call([exe_path, unit_out, unit_err, inpf], 
+                            t.check_call([exe_path, unit_out, unit_err, inpf], 
                                stdout=out_file, stderr=err_file, stdin=inp_file)
                         else:
-                            check_call([exe_path, unit_out, unit_err], 
+                            t.check_call([exe_path, unit_out, unit_err], 
                                stdout=out_file, stderr=err_file, stdin=inp_file)
                         
                         # all tests are sent an input file, read remainder
@@ -293,9 +297,9 @@ def test(locations, test_obj, source, fn_name,
             unit_fail.add("SystemError")
             
             # create a notice about the abort throw and put in message
-            m = "The " + fn_name + " unit test was aborted during execution "
-            m += "by the operating system. If any reason or trace was given "
-            m += "these may exist in the standard error message of the "
+            m = "The " + fn_name + " unit test was aborted during execution. "
+            m += "If any reason or trace was given "
+            m += "these may exist in the error message of the "
             m += "specific call that was aborted. If the type of abort was "
             m += "recognized there will be guidance in the Suggestions "
             m += "section. The abort may have been caused by this function "
@@ -303,13 +307,22 @@ def test(locations, test_obj, source, fn_name,
             notifications["abort"] = m
             
            
-            # if seg fault was detected
             # TODO: this access is ugly and should be cleaned up
+            # if seg fault was detected
             if e[0][0] == -11:
                 cl = ["return value", "values of each parameter"]
                 s = "A segmentation fault was detected when invoking your "
                 s += "function. Make sure you check the following for "
                 s += fn_name + " as well as any functions it invokes.\n"
+                s += markup_create_indent(markup_create_unlist(cl), 1)
+                suggestions.append(s)
+            # termination of thread due to timeout
+            elif e[0][0] == -15:
+                cl = ["infinite loops (check your conditions)", 
+                      "attempting to get input when no input exists"]
+                s = "The unit test for your function, " + fn_name + " failed "
+                s += "to execute to completion in the time allotted to it. "
+                s += "This may have been caused by several things including:\n"
                 s += markup_create_indent(markup_create_unlist(cl), 1)
                 suggestions.append(s)
             else:

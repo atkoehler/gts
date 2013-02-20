@@ -22,6 +22,7 @@ PENALTY = 25
 INCLUDES_DIR = "system/include"
 
 from system.utils import *
+from system.procs import *
 
 ## 
 # @brief test function checks compilation of the program
@@ -91,7 +92,7 @@ def compile_single(file_wpath, output_wpath, harness_dir):
     import os
     import subprocess
     import shutil
-    from system.utils import which, check_call
+    from system.utils import which
 
     # Open /dev/null for dismissing errors or output    
     nullFile = open(os.devnull, 'w')

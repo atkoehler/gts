@@ -55,15 +55,6 @@ def expand_all_tabs(lines, tab_size):
         lines[i] = line.expandtabs(tab_size)
 
 
-def check_call(*args, **kwargs):
-    "Essentially subprocess.check_call for compatibility reasons."
-    
-    import subprocess
-    returnValue = subprocess.call(*args, **kwargs)
-    if returnValue != 0:
-        raise SystemError((returnValue, str(args[0])))
-    else:
-        return 0
 
 def markup_convert_newline(line):
     "Convert solitary newlines in string to markup format"

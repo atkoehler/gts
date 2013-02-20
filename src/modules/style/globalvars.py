@@ -25,6 +25,7 @@ def globals_exist(test, harness_dir, source):
     import os
     import shutil
     from system.utils import which
+    from system.procs import check_call
    
     # intialize to empty list of global variables  
     vars = [] 
@@ -49,8 +50,6 @@ def globals_exist(test, harness_dir, source):
     
     FNULL = open(os.devnull, 'w')
     try:
-        from system.utils import check_call
-
         # compile the object file
         # set up path to includes directory
         include_path = os.path.join(harness_dir, INCLUDES_DIR)

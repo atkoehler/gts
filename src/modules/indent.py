@@ -115,7 +115,8 @@ def indent_args(f, p, arg_list):
     import os
     import subprocess  
     import shutil
-    from system.utils import which, check_call
+    from system.utils import which
+    from system.procs import check_call
     
     files_to_remove = []
     
