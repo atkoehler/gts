@@ -95,6 +95,7 @@ INCLUDE_LINES = "includes.txt"
 TEST_FILE_NM = "testfile.cpp"
 UNIT_DIR_NAME = "unit_tests"
 TIMEOUT = 10
+CASES_TO_OUTPUT = 3
 
 ## 
 # @brief test function runs the unit test
@@ -437,7 +438,10 @@ def test(locations, test_obj, source, fn_name,
                     # be created by unit_error or unit_out
                     if key in unit_fail:
                         if key in run_messages:
-                            run_messages[key] += single_result
+                            if run_messages[key][-1] == "\n":
+                                run_messages[key] += single_result
+                            else:
+                                run_messages[key] += "\n" + single_result
                         else:
                             run_messages[key] = single_result
         
@@ -462,18 +466,40 @@ def test(locations, test_obj, source, fn_name,
        
         # create suggestion if any unit tests failed 
         if len(run_messages) > 0:
-            s = "You failed " + str(len(run_messages))
-            s += " test cases. Additionally if any exceptions or aborts were "
-            s += "thrown then most likely not all test cases were executed. "
-            s += "Start with the first test case that failed and try to fix "
-            s += "it. Then look at the next. If you are "
-            s += "confident with your fixes submit your latest work to test it."
+            s = "In total, you failed " + str(len(run_messages)) + " test "
+            s += "cases which executed to completion. "
+            if CASES_TO_OUTPUT != 0 and CASES_TO_OUTPUT < len(run_messages):
+                s += "To avoid clutter we have provided information on " 
+                s += str(min(len(run_messages), CASES_TO_OUTPUT)) + " of "
+                s += "these cases. Please utilize this information when "
+                s += "attempting to fix your function, " +fn_name + ". "
+                s += "When you submit again, if you pass one "
+                s += "of the displayed cases it will disappear and may be "
+                s += "replaced by information for another of the cases you "
+                s += "failed."
+            elif CASES_TO_OUTPUT == 0:
+                s += "Please attempt to fix your code for your function, "
+                s += fn_name + ". We have opted to not "
+                s += "display information for any of the failed cases to "
+                s += "encourage development of proper testing skills when "
+                s += "designign a program or function. This includes coming "
+                s += "up with the cases."
+            else:
+                s += "Information on these test cases has been provided. "
+                s += "Please utilize this information when "
+                s += "attempting to fix your function, " +fn_name + ". "
+                s += "When you submit again, if you pass one "
+                s += "of the displayed cases it will disapppear."
             suggestions.append(s)
        
         # add individual testing output to the message
         import operator
         m_sorted = sorted(run_messages.iteritems(), key=operator.itemgetter(0))
+        count = 0
         for (key, value) in m_sorted:
+            if count >= CASES_TO_OUTPUT:
+                break
+            count = count + 1
             header = markup_create_indent(markup_create_header(key+"\n", 3),1)
             message.append(header + value)
          
