@@ -46,7 +46,10 @@ void testFunction(std::ofstream &harnessOutput, std::ofstream &harnessError,
         // clear the file before writing, write out input and extra per line
         inputFile.open(input, ios::out | ios::trunc);
         for (int i = 0; i < input_contents.size(); i++)    
-            inputFile << input_contents.at(i) << " " << extra << endl << endl;
+        {
+            inputFile << input_contents.at(i) << " " << extra << std::endl 
+                << std::endl;
+        }
         inputFile.close(); 
     }       
 
@@ -60,7 +63,7 @@ void testFunction(std::ofstream &harnessOutput, std::ofstream &harnessError,
         {
             // output the section title to standard output so it precedes
             // any function output within standard out for this individual test
-            cout << call << endl;
+            std::cout << call << std::endl;
 
             // TODO: call to generic function, script should replace the name
             ret_val = STUDENT_FUNC_NAME(par.at(i));
@@ -102,7 +105,7 @@ void testFunction(std::ofstream &harnessOutput, std::ofstream &harnessError,
             harnessError << call;
             harnessError << "\t";
             harnessError << "Out of Range exception thrown by: ";
-            harnessError << oor.what() << endl;
+            harnessError << oor.what() << std::endl;
             
         }
         catch(...)
@@ -111,7 +114,7 @@ void testFunction(std::ofstream &harnessOutput, std::ofstream &harnessError,
             // statement that an exception was thrown
             harnessError << call;
             harnessError << "\t";
-            harnessError << "exception thrown" << endl;
+            harnessError << "exception thrown" << std::endl;
         }
 
         // The next test's input will be after the next newline
