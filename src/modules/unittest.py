@@ -212,6 +212,7 @@ def test(locations, test_obj, source, fn_name,
     notifications = {}
     unit_fail = set()
     contains_output = False
+    contains_input = False
     # merge success
     if ret:
         # attempt compilation
@@ -257,20 +258,37 @@ def test(locations, test_obj, source, fn_name,
         
         
         # run the unit test 
+        # TODO: implement termination of process if it takes too long
         try:
             with open(outf, 'w') as out_file:
                 with open(errf, 'w') as err_file:
-                    if has_input:
-                        inputFile = open(inpf, 'w+')
-                        inputFile.write("OverwriteMe")
-                        inputFile.close()
-                        with open(inpf, 'r') as inp_file:
+                    inputFile = open(inpf, 'w+')
+                    inputFile.write("1 a holy cow")
+                    inputFile.close()
+                    with open(inpf, 'r') as inp_file:
+                        if has_input:
                             check_call([exe_path, unit_out, unit_err, inpf], 
                                stdout=out_file, stderr=err_file, stdin=inp_file)
-                    else:
-                        check_call([exe_path, unit_out, unit_err], 
-                           stdout=out_file, stderr=err_file)
-        
+                        else:
+                            check_call([exe_path, unit_out, unit_err], 
+                               stdout=out_file, stderr=err_file, stdin=inp_file)
+                        
+                        # all tests are sent an input file, read remainder
+                        remains = inp_file.read()
+                        
+            # read entire input file for comparison
+            with open(inpf, 'r') as inp_file:
+                entire = inp_file.read()
+            
+            # if function was not meant to have input and it
+            # consumed something then make note of it
+            # TODO: if process has_input then remains length is always 0
+            # this does not imply that it did or didn't take input
+            if len(remains) != len(entire):
+                contains_input = True
+            else:
+                contains_input = False
+    
         except SystemError as e:
             unit_fail.add("SystemError")
             
@@ -388,11 +406,12 @@ def test(locations, test_obj, source, fn_name,
                     contains_output = True
                     
                     act_output = "\n".join(lines[1:])
+                    pref_output = markup_create_codeblock(act_output)
                      
                     top = fn_name + " standard output\n"
                     single_result = markup_create_header(top, 4)
                     single_result = markup_create_indent(single_result, 2)
-                    single_result += markup_create_indent(act_output, 3)
+                    single_result += markup_create_indent(pref_output, 3)
                     single_result += "\n"
                     key = key.strip()
                     
@@ -416,6 +435,17 @@ def test(locations, test_obj, source, fn_name,
         elif has_output and not contains_output:
             s = "The " + fn_name + " function should contain some output."
             suggestions.append(s)
+
+        # create a suggestion about the existence of input
+        if not has_input and contains_input: 
+            s = "The " + fn_name + " function should not consume any input."
+            suggestions.append(s)
+            unit_fail.add("InputProblem")
+        elif has_input and not contains_input:
+            s = "The " + fn_name + " function should consume some input."
+            suggestions.append(s)
+            unit_fail.add("InputProblem")
+
        
         # create suggestion if any unit tests failed 
         if len(run_messages) > 0:

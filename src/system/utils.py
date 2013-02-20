@@ -110,3 +110,14 @@ def markup_create_italic(line):
     
     return "*" + line + "*" 
 
+def markup_create_codeblock(text):
+    "Place 5 spaces in the front of each line in text, to get pre effect"
+     
+    if text.find('\n') == -1 or text.find('\n') == (len(text) - 1):
+        return " " * 5 + text
+    else:
+        lines = text.split('\n')
+        for (i, line) in enumerate(lines):
+            lines[i] = " " * 5 + line
+        return "\n".join(lines)
+
