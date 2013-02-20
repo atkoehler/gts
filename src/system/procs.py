@@ -12,6 +12,12 @@
 import subprocess
 import threading
 
+##
+# @brief A task is a single process that is executed for a given amount of time
+#
+#       If no time is executed then no timeout will exist and the task will 
+#       execute until completion
+#
 class Task:
     def __init__(self, timeout=None):
         self.timeout = timeout
@@ -37,7 +43,13 @@ class Task:
         else:
             return 0
 
-# non-threaded version
+##
+# @brief Non-threaded version of check_call.
+#
+#        This allows items to be easily executed by the harness so that a 
+#        task does not always have to be created first. The threaded version
+#        should be used in almost all cases when executing non-system programs
+#
 def check_call(*args, **kwargs):
     "Essentially subprocess.check_call for compatibility reasons."
     
