@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     }
     else 
     {
-        cerr << "Incorrect number of command line args" << std::endl;
+        std::cerr << "Incorrect number of command line args" << std::endl;
         return 1;
     }
 
