@@ -121,9 +121,21 @@ def test(locations, test_obj, source):
         header = markup_create_bold("Improper Conditionals") + ": "
         m = m.strip().rstrip(',')
         if len(nums) == 1:
-            m = "Found improper boolean conditional expression. Such as one that compares to true--(var_name == true)--instead of simply using the boolean value--(var_name). Improper conditionals discovered on line: " + m
+            s = "Found improper boolean conditional expression. Such as one "
+            s += "which compares to true: "
+            s += markup_create_inlinecode("(var_name == true)") + ", instead " 
+            s += " of simply using the boolean value: " 
+            s += markup_create_inlinecode("(var_name)") + ". At least one "
+            s += "improper conditional statement discovered on line: "
+            m = s + m
         else: 
-            m = "Found improper boolean conditional expressions. Such as one that compares to true--(var_name == true)--instead of simply using the boolean value--(var_name). Improper conditionals discovered on lines: " + m
+            s = "Found improper boolean conditional expression. Such as one "
+            s += "which compares to true: "
+            s += markup_create_inlinecode("(var_name == true)") + ", instead " 
+            s += " of simply using the boolean value: " 
+            s += markup_create_inlinecode("(var_name)") + ". At least one "
+            s += "improper conditional statement discovered on lines: "
+            m = s + m
         messages.append(header + m)
     test_obj.parts.append(sub_test)
     
@@ -190,12 +202,12 @@ def test(locations, test_obj, source):
     # cap style deduction
     if abs(test_obj.score) > STYLE_PENALTY_MAX:
         m = "Penalty of " + str(abs(test_obj.score)) + " exceeds maximum " 
-        m += "penalty of " + str(STYLE_PENALTY_MAX) + ", assessing maximum.\n"
+        m += "penalty of " + str(STYLE_PENALTY_MAX) + ", assessing maximum.\n\n"
         test_obj.score = -1 * STYLE_PENALTY_MAX
    
     # add any messages to test object
     if len(messages) > 0:
-        test_obj.message = m + markup_create_unlist(messages)
+        test_obj.message = m + markup_create_unlist(insert_blanks(messages))
     else:
         test_obj.message = m 
    

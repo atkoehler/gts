@@ -112,3 +112,18 @@ def markup_create_codeblock(text):
             lines[i] = " " * 5 + line
         return "\n".join(lines)
 
+def markup_create_inlinecode(word):
+    "Create an inline code block using back ticks for markup reading"
+        
+    return "`` " + word + " ``" 
+
+def insert_blanks(text):
+    "Insert newline after each list item or if not list after every newline"
+    
+    if isinstance(text, list):
+        for (i, line) in enumerate(text):    
+           text[i] = line + "\n"
+        return text
+    else: 
+        return text.replace("\n", "\n\n")
+
