@@ -452,6 +452,7 @@ def test(locations, test_obj, source, fn_name,
         elif has_output and not contains_output:
             s = "The " + fn_name + " function should contain some output."
             suggestions.append(s)
+            unit_fail.add("OutputProblem")
 
         # create a suggestion about the existence of input
         if not has_input and contains_input: 
