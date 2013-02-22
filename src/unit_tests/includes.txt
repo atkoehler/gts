@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include <limits>
+#include <sstream>
 
 // Extra Includes Specific to this programming assessment
 

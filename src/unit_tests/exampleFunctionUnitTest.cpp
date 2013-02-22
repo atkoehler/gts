@@ -11,6 +11,14 @@
 /// @param input is the location of the input file that will be utilized
 ///         this is an optional parameter and if not specified will be NULL
 ///
+
+string convertInt(int number)
+{
+   stringstream ss;
+   ss << number;
+   return ss.str();
+}
+
 void testFunction(std::ofstream &harnessOutput, std::ofstream &harnessError, 
                   char *input = NULL)
 {
@@ -40,8 +48,7 @@ void testFunction(std::ofstream &harnessOutput, std::ofstream &harnessError,
 
         // extra inputs should change depending on what sort of valid inputs
         // are to be expected by the program
-        std::string extra = "a b c d e f g h i j k l m n o p q " +
-                            "r s t u v w x y z";
+        std::string extra = "a b c d e f g h i j k l m n o p q";
 
         // clear the file before writing, write out input and extra per line
         inputFile.open(input, ios::out | ios::trunc);
