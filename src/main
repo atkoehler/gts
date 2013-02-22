@@ -161,10 +161,9 @@ if source_exist:
     name = "Functions Unit Test"
     if name in config.actions:
         #functions = ["monthConvert", "dayConvert", "yearConvert", "dateConvert"]
-        functions = ["setupUnsolvedPhrase", "updateUnsolvedPhrase", 
-                     "getNewGuess"]
-        function_output = [False, False, True]
-        function_input = [False, False, True]
+        functions = ["genieRoom"]
+        function_output = [True]
+        function_input = [False]
                
         for (i, fn) in enumerate(functions):
             # create test object
