@@ -62,7 +62,7 @@ if source_exist:
 result.add_test(t)
 
 # TODO: remove this list creation once actions are activated in Galah
-config.actions = ["Submit Date Check", "Proper File Name", "Proper Assignment Header", "Proper Programming Style", "Compilation Check", "Functions Unit Test"]
+config.actions = ["Submit Date Check", "Proper File Name", "Proper Assignment Header", "Proper Programming Style", "Compilation Check", "Functions Logic Test"]
 
 # nothing can be done if no source file was discovered
 if source_exist: 
@@ -158,17 +158,19 @@ if source_exist:
         if completed == OK:
             result.add_test(t)
     
-    name = "Functions Unit Test"
+    name = "Functions Logic Test"
     if name in config.actions:
         #functions = ["monthConvert", "dayConvert", "yearConvert", "dateConvert"]
-        functions = ["genieRoom"]
-        function_output = [True]
-        function_input = [False]
+        functions = ["genieRoom", "monsterRoom"]
+        # None implies function name + .cpp is the file to utilize
+        files = [None, ["monsterRoom.1.cpp", "monsterRoom.2.cpp", "monsterRoom.3.cpp"]]
+        has_output = [True, True]
+        takes_input = [False, False]
                
         for (i, fn) in enumerate(functions):
             # create test object
             t = GalahTest()
-            t.name = fn + " unit test"
+            t.name = fn + " logic test"
             if i % 2 == 0:
                 t.max_score = 25
             else:
@@ -176,7 +178,7 @@ if source_exist:
          
             # run test
             import modules.unittest as unittest
-            completed = unittest.test((config.testables_directory, config.harness_directory), t, source, fn, function_output[i], function_input[i])
+            completed = unittest.test((config.testables_directory, config.harness_directory), t, source, fn, has_output[i], takes_input[i], files[i])
         
             # add test to result
             if completed == OK:

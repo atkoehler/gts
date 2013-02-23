@@ -105,14 +105,47 @@ CASES_TO_OUTPUT = 3
 # @param source the source object containing name, location and content splits
 # @param fn_name name of the function to run unit test for
 # @param has_output whether function should have output, default is False
+# @param has_input whether the function should have input, default is False
+# @param files list of files that store unit tests, if None use fn_name+.cpp
 #
 # @return 0 if test completed successfully, otherwise -1
 #
 def test(locations, test_obj, source, fn_name, 
-                    has_output=False, has_input=False):
+                    has_output=False, has_input=False, files=None):
     import re
     OK = 0
     ERROR = -1
+
+
+    # TODO: this probably should go in some sort of external file
+    exception_msg = {}
+    exception_handled = {}
+
+    # Out of Range exceptions
+    # string.at(int)
+    exception_msg["Out of Range"] = {}
+    s = "At least one exception was thrown by calling the at() member "
+    s += " function of a string with a value that is either negative or "
+    s += " greater than or equal to the size of the string. Check the value "
+    s += " passed with each invocation of the function at() in " + fn_name 
+    s += " as well as any functions " + fn_name + " calls."
+    exception_msg["Out of Range"]["basic_string::at"] = s
+    
+    # vector.at(int)
+    s = "At least one exception was thrown by calling the at() member "
+    s += " function of a vector. The function was provided a value that is "
+    s += " greater than or equal to the size of the vector or it was given a "
+    s += " negative value. Check the value "
+    s += " passed with each invocation of the function at() in " + fn_name 
+    s += " as well as any functions " + fn_name + " calls."
+    exception_msg["Out of Range"]["vector::_M_range_check"] = s
+    
+    # initially no exceptions have been handled
+    for key in exception_msg:
+        exception_handled[key] = {}
+        for what_key in exception_msg[key]:
+            exception_handled[key][what_key] = False
+
     
     harness_dir = locations[1]
     files_to_remove = []
@@ -145,8 +178,6 @@ def test(locations, test_obj, source, fn_name,
         
         return OK
     
-    # create unit testing file
-    unit = UnitTest(fn_name)
    
     # TODO: make sure all the paths and files exist before accessing/using 
     # set up path to unit tests directory
@@ -156,18 +187,26 @@ def test(locations, test_obj, source, fn_name,
     inc_stmt_path = os.path.join(unit_dir, INCLUDE_LINES)
     
     # set up path to harness C++ file
-    unit_filename = fn_name + ".cpp"
-    unit_test_path = os.path.join(unit_dir, unit_filename)
+    unit_test_path = []
+    if files is None:
+        unit_filename = fn_name + ".cpp"
+        unit_test_path.append(os.path.join(unit_dir, unit_filename))
+    else:
+        for i in files:
+            unit_test_path.append(os.path.join(unit_dir, i))
     unit_main_path = os.path.join(unit_dir, "unit_main.cpp")
     
     # set up path to testing file
-    merged_path = os.path.join(working_dir, TEST_FILE_NM)
-    files_to_remove.append(merged_path)
-    
-    # create the unit
-    ret = unit.create_unit(inc_stmt_path, unit_test_path, unit_main_path,
-                           merged_path, source, harness_dir)
-    
+    merged_path = []
+    if files is None:
+        merged_path.append(os.path.join(working_dir, TEST_FILE_NM))
+        files_to_remove.append(merged_path[-1])
+    else:
+        for (i, test) in enumerate(unit_test_path):
+            file_nm = TEST_FILE_NM[0:TEST_FILE_NM.find(".cpp")] +str(i)+ ".cpp"
+            merged_path.append(os.path.join(working_dir, file_nm))
+            files_to_remove.append(merged_path[-1])
+   
     # set up paths for unit test output
     unit_out = os.path.join(working_dir, "unit_test_output.txt")
     unit_err = os.path.join(working_dir, "unit_test_errors.txt")
@@ -179,35 +218,15 @@ def test(locations, test_obj, source, fn_name,
     files_to_remove.append(errf)
     files_to_remove.append(outf)
     files_to_remove.append(inpf)
-       
-    # TODO: this probably should go in some sort of external file
-    exception_msg = {}
-    exception_handled = {}
-
-    # Out of Range exceptions
-    # string.at(int)
-    exception_msg["Out of Range"] = {}
-    s = "At least one exception was thrown by calling the at() member "
-    s += " function of a string with a value that is either negative or "
-    s += " greater than or equal to the size of the string. Check the value "
-    s += " passed with each invocation of the function at() in " + fn_name 
-    s += " as well as any functions " + fn_name + " calls."
-    exception_msg["Out of Range"]["basic_string::at"] = s
     
-    # vector.at(int)
-    s = "At least one exception was thrown by calling the at() member "
-    s += " function of a vector. The function was provided a value that is "
-    s += " greater than or equal to the size of the vector or it was given a "
-    s += " negative value. Check the value "
-    s += " passed with each invocation of the function at() in " + fn_name 
-    s += " as well as any functions " + fn_name + " calls."
-    exception_msg["Out of Range"]["vector::_M_range_check"] = s
-    
-    # initially no exceptions have been handled
-    for key in exception_msg:
-        exception_handled[key] = {}
-        for what_key in exception_msg[key]:
-            exception_handled[key][what_key] = False
+    # create unit testing file
+    units = []
+    for (i, unit_test) in enumerate(unit_test_path):
+        unit = UnitTest(fn_name)
+        ret = unit.create_unit(inc_stmt_path, unit_test, unit_main_path,
+                           merged_path[i], source, harness_dir)
+        if ret:
+            units.append(unit)
     
     message = []
     suggestions = []
@@ -217,9 +236,15 @@ def test(locations, test_obj, source, fn_name,
     contains_output = False
     contains_input = False
     # merge success
-    if ret:
-        # attempt compilation
-        ret_val = compile_single(merged_path, exe_path, harness_dir)
+    if len(units) == 0:
+        test_obj.message = "Could not create unit test."
+    else:
+        for merge_p in merged_path:
+            # attempt compilation
+            ret_val = compile_single(merge_p, exe_path, harness_dir)
+            if ret_val["success"]:
+                break
+
         if not ret_val["success"]:
             test_obj.score = 0
             header = markup_create_header("Notice\n", 2)
@@ -530,8 +555,6 @@ def test(locations, test_obj, source, fn_name,
                 test_obj.message += "\n".join(message)
             else:
                 test_obj.message += "\n" + "\n".join(message)
-    else:
-        test_obj.message = "Could not create unit test"        
     
     # clean up
     if made_working:
