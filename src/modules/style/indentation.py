@@ -6,12 +6,6 @@
 # @brief Provides module for checking indentation and single curly per line
 #
 
-# TODO: figure out the configuration system to get this item from their
-DEFAULT_SPACING = 3
-MIN_SPACING = 2
-MAX_SPACING = 6
-
-
 class SourceLine:
     "A source line and its associated line number in the file"
     
@@ -48,12 +42,14 @@ class Block:
 #        function as the single curly restraint is necessary at the time for
 #        proper block initialization.
 #
+# @param test the test part object to update with score
 # @param source the source object containing name, location and other members
+# @param deduction the deduction to take off per discovered problem
 #
 # @return tuple containing True/False and list of line numbers where each
 #         number is the start of an incorrectly spaced indentation block
 #
-def correct_indent(source):
+def correct_indent(test, source, deduction):
     """
     Go through the lines in each level and determine if spacing is correct.
     
@@ -95,8 +91,10 @@ def correct_indent(source):
                     else:
                         bad_lines.append(line.num)
     
-    # test completed and return list of lines where bad indent blocks start
-    return (True, sorted(list(set(bad_lines))))
+    # test completed and return list of incorrectly indented lines
+    bad_l = sorted(list(set(bad_lines)))
+    test.score = -1 * deduction * len(bad_l)
+    return (True, bad_l)
 
 
 ##
@@ -170,7 +168,7 @@ def create_blocks(source):
     return (len(blocks) != 0, blocks)
 
     
-def one_curly_per_line(source):
+def one_curly_per_line(source, test=None, deduction=0):
     """
     Determines if one curly brace exists per line
     
@@ -192,7 +190,8 @@ def one_curly_per_line(source):
     if len(bad_lines) > 0:
         source.style_halt = True
     
+    if test is not None:    
+        test.score = -1 * deduction * len(bad_lines)
     return bad_lines
-
 
 

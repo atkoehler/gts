@@ -6,9 +6,6 @@
 # @brief Provides checks such as checking for "== true"
 #
 
-# TODO: figure out the configuration system to get this item from their
-DEDUCTION_PER_GAFFE = 5
-
 
 ## 
 # @brief sub test to check whether improper conditionals exist
@@ -18,10 +15,11 @@ DEDUCTION_PER_GAFFE = 5
 # 
 # @param test the test part object to update with score
 # @param source the source object containing name, location and content splits
+# @param deduction the deduction to take off per discovered problem
 #
 # @return a list containing line numbers in file that have improper conditional
 #
-def improper_bool(test, source):
+def improper_bool(test, source, deduction):
     line_nums = []
     improper = ["== true", "true ==", "== false", "false =="]
     
@@ -45,6 +43,6 @@ def improper_bool(test, source):
             line_nums.append(i+1)
         
     
-    test.score = -1 * DEDUCTION_PER_GAFFE * len(line_nums)
+    test.score = -1 * deduction * len(line_nums)
     return line_nums
 

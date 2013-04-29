@@ -6,18 +6,15 @@
 # @brief Provides a checks on line length
 #
 
-# TODO: figure out the configuration system to get this item from their
-DEDUCTION_PER_GAFFE = 5
-LONG_LINE_COUNT = 80
-
-
 ## 
 # @brief sub test to check whether long lines exist in the program
 # 
 # @param test the test part object to update with score
 # @param source the source object containing name, location and content splits
+# @param max_len maximum length of a line
+# @param deduction the deduction to take off per discovered problem
 #
-def long_check(test, source):
+def long_check(test, source, max_len, deduction):
     from system.utils import expand_all_tabs
     
     line_nums = []
@@ -30,9 +27,9 @@ def long_check(test, source):
     lines = contents.split("\n")
     expand_all_tabs(lines, source.indent_size)
     for (i, line) in enumerate(lines):
-        if len(line) > LONG_LINE_COUNT:
+        if len(line.rstrip()) > max_len:
             line_nums.append(i+1)
 
-    test.score = -1 * DEDUCTION_PER_GAFFE * len(line_nums)
+    test.score = -1 * deduction * len(line_nums)
     return line_nums
 

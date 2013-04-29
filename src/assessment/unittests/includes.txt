@@ -1,0 +1,16 @@
+// This file is placed at the top of the unit test
+// Generic Unit Test Includes
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <stdexcept>
+#include <limits>
+#include <sstream>
+
+// Extra Includes Specific to this programming assessment
+
+// End Unit Test Includes
+
+
+// Test harnesses will utilize the std namespace
+using namespace std;

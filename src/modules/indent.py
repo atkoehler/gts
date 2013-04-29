@@ -7,12 +7,6 @@
 #        list of arguments.
 #
 
-# TODO: grab this from configuration object/file when implemented
-WORKING_DIR_NAME = "working"
-PENALTY = 25
-COMPILER = "g++"
-INCLUDES_DIR = "system/include"
-
 from system.utils import *
 
 ## 
@@ -20,26 +14,27 @@ from system.utils import *
 # 
 # @param locations tuple (location of code, location of harness)
 # @param test_obj the test object containing properties to fill out
+# @param vars the dictionary of variables for the test from conifuration JSON
+# @param source the source object containing name, location and content splits
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return 0 if test completed successfully, otherwise -1
 #
-def test(locations, test_obj, source):
+def test(locations, test_obj, vars, source, env):
     import os
     OK = 0
     ERROR = -1
     
     harness_dir = locations[1]
     
-    # cuddle do-while, no tabs
-    add_args = ["-cdw", "-nut"] 
-    
     # attempt file indent
-    ret_val = indent_file(source.file_loc, harness_dir, "BSD", add_args)
+    ret_val = indent_file(source.file_loc, harness_dir, env, vars["base_style"],
+                          vars["add_flags"])
     
     # set message to errors from indent if they exist and enforce penalty
     if not ret_val["errors"] is None:
         test_obj.message = markup_create_indent(ret_val["errors"], 1)
-        test_obj.score = -1 * PENALTY
+        test_obj.score = -1 * vars["penalty"]
     elif not ret_val["success"]:
         test_obj.message = ret_val["message"]
     else:
@@ -57,20 +52,21 @@ def test(locations, test_obj, source):
 # @param source_wpath a file to be indented containing full path to file
 # @param preset a string containing a preset style
 # @param arguments a list of arguments for indent command if preset is None
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return dictionary containing the keys, success, message, errors. 
 #           success contains True if the file could be indented. 
 #           message contains the indented file as a string if success is True
 #           errors contains stderr output from indent command, otherwise None
 #
-def indent_file(source_wpath, harness_path, preset = None, arguments = None):
+def indent_file(source_wpath, harness_path, env, preset="", arguments=None):
     if arguments is None:
         arguments = []
     
-    if preset is None:
-        ret_val = indent_args(source_wpath, harness_path, arguments)
+    if preset == "":
+        ret_val = indent_args(source_wpath, harness_path, arguments, env)
     elif preset == "BSD":
-        ret_val = preset_bsd(source_wpath, harness_path, arguments)
+        ret_val = preset_bsd(source_wpath, harness_path, arguments, env)
     else:
         message = "Invalid preset value: " + str(preset)
         ret_val = {"success": False, "message": message, "errors": None}
@@ -84,19 +80,20 @@ def indent_file(source_wpath, harness_path, preset = None, arguments = None):
 # @param f a file to be indented containing full path to file
 # @param p is the path to the test harness directory
 # @param arg_list a list of arguments to be utilized in addition to BSD args
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return dictionary containing the keys, success, message, errors. 
 #           success contains True if the file could be indented. 
 #           message contains the indented file as a string if success is True
 #           errors contains stderr output from indent command, otherwise None
 #
-def preset_bsd(f, p, arg_list):
+def preset_bsd(f, p, arg_list, env):
     bsd_args = ["-bap", "-bli0", "-i4", "-l79", "-ncs", "-npcs", 
                  "-npsl", "-lc79", "-fc1", "-ts4"]
     for i in arg_list:
         bsd_args.append(i)
     
-    return indent_args(f, p, bsd_args)
+    return indent_args(f, p, bsd_args, env)
 
 
 ## 
@@ -105,13 +102,14 @@ def preset_bsd(f, p, arg_list):
 # @param f a file to be indented containing full path to file
 # @param p is the path to the test harness directory
 # @param arg_list a list of arguments to be utilized
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return dictionary containing the keys, success, message, errors. 
 #           success contains True if the file could be indented. 
 #           message contains the indented file as a string if success is True
 #           errors contains stderr output from indent command, otherwise None
 #
-def indent_args(f, p, arg_list):
+def indent_args(f, p, arg_list, env):
     import os
     import subprocess  
     import shutil
@@ -136,7 +134,7 @@ def indent_args(f, p, arg_list):
         return {"success": indented, "message": message, "errors": error}
     
     # create a working directory if one doesn't exist
-    working_dir = os.path.join(p, WORKING_DIR_NAME)
+    working_dir = os.path.join(p, env["working_dir"])
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
         made_working = True
@@ -146,14 +144,14 @@ def indent_args(f, p, arg_list):
     
     # attempt compilation as compile errors may cause odd indent errors
     # grab proper g++ command 
-    gpp = which(COMPILER)
+    gpp = which(env["compiler"])
 
     # pull out file path to trim any error messages to just name or local path
     file_wpath = f
     file_path = file_wpath[0:file_wpath.rfind("/")+1]
     
     # set up path to includes directory
-    include_path = os.path.join(p, INCLUDES_DIR)
+    include_path = os.path.join(p, env["includes_dir"])
     
     # set up path to output exe
     output_wpath = os.path.join(working_dir, "indent_compile")

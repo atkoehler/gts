@@ -6,11 +6,6 @@
 # @brief Provides a check for whether global variables exist in program
 #
 
-# TODO: figure out the configuration system to get this item from their
-STYLE_PENALTY_MAX = 10
-DEDUCTION_PER_GAFFE = 5
-LONG_LINE_COUNT = 80
-
 from galah.interact import *
 from system.utils import *
 
@@ -19,13 +14,15 @@ from system.utils import *
 # 
 # @param locations tuple (location of code, location of harness)
 # @param test_obj the test object containing properties to fill out
+# @param vars the dictionary of variables for the test from conifuration JSON
 # @param source the source object containing name, location and content splits
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return 0 if test completed successfully, otherwise -1
 #
 # @precondition the source contents have been split into source object fields
 #
-def test(locations, test_obj, source):
+def test(locations, test_obj, vars, source, env):
     OK = 0
     ERROR = -1
     
@@ -36,11 +33,13 @@ def test(locations, test_obj, source):
     name = "Global variable existence check"
     sub_test = GalahTestPart()
     sub_test.name = name
-    globals = globalvars.globals_exist(sub_test, locations[1], source)
+    globals = globalvars.globals_exist(sub_test, locations[1], source, 
+                                       env, vars["per_gaffe"])
     m = ""
     header = markup_create_bold("Global Variables") + ": "
     if globals is None:
-        m = "The check for global variables could not be executed due to compilation error. Passing for now."
+        m = "The check for global variables could not be executed due to "
+        m += "compilation error. Passing for now."
         messages.append(header + m)
     else:
         for i in globals:
@@ -60,7 +59,7 @@ def test(locations, test_obj, source):
     name = "Comments exist in source code"
     sub_test = GalahTestPart()
     sub_test.name = name
-    ret = comments.comments_exist(sub_test, source)    
+    ret = comments.comments_exist(sub_test, source, vars["per_gaffe"])    
     if not ret:
         m = "Did not find any comments in source code."
         header = markup_create_bold("Comments") + ": "
@@ -70,10 +69,11 @@ def test(locations, test_obj, source):
     
     # check for long lines in code
     import modules.style.linelength as linelength
-    name = "No lines over " + str(LONG_LINE_COUNT) + " characters"
+    name = "No lines over " + str(vars["line_length_max"]) + " characters"
     sub_test = GalahTestPart()
     sub_test.name = name
-    nums = linelength.long_check(sub_test, source)
+    nums = linelength.long_check(sub_test, source, 
+                                 vars["line_length_max"], vars["per_gaffe"])
     m = ""
     header = markup_create_bold("Long Lines") + ": "
     for i in nums:
@@ -81,9 +81,13 @@ def test(locations, test_obj, source):
     if len(nums) > 0:
         m = m.strip().rstrip(',')
         if len(nums) == 1:
-            m = "Exceeded " +str(LONG_LINE_COUNT)+ " characters on line: " + m
+            temp = "Exceeded " + str(vars["line_length_max"])
+            temp += " characters on line: " + m
+            m = temp
         elif len(nums) > 1:
-            m = "Exceeded " +str(LONG_LINE_COUNT)+ " characters on lines: " + m
+            temp = "Exceeded " + str(vars["line_length_max"])
+            temp += " characters on lines: " + m
+            m = temp
         messages.append(header + m)
     test_obj.parts.append(sub_test)
     
@@ -93,7 +97,7 @@ def test(locations, test_obj, source):
     name = "No tabs used in source"
     sub_test = GalahTestPart()
     sub_test.name = name
-    nums = tabs.find_tabs(sub_test, source)
+    nums = tabs.find_tabs(sub_test, source, vars["per_gaffe"])
     m = ""
     for i in nums:
         m += str(i) + ", "
@@ -113,7 +117,7 @@ def test(locations, test_obj, source):
     name = "No improper conditional statements"
     sub_test = GalahTestPart()
     sub_test.name = name
-    nums = conditionals.improper_bool(sub_test, source)
+    nums = conditionals.improper_bool(sub_test, source, vars["per_gaffe"])
     m = ""
     for i in nums:
         m += str(i) + ", "
@@ -147,7 +151,7 @@ def test(locations, test_obj, source):
     sub_test.name = name
     
     m = ""
-    nums = indentation.one_curly_per_line(source)
+    nums = indentation.one_curly_per_line(source, sub_test, vars["per_gaffe"])
     for i in nums:
         m += str(i) + ", "
     if len(nums) > 0:
@@ -158,7 +162,6 @@ def test(locations, test_obj, source):
         elif len(nums) > 1:
             m = "Found multiple curly braces on lines: " + m
         messages.append(header + m)
-    sub_test.score = -1 * DEDUCTION_PER_GAFFE * len(nums)
     test_obj.parts.append(sub_test)
     
     
@@ -169,7 +172,7 @@ def test(locations, test_obj, source):
     sub_test.name = name
     
     m = ""
-    (ret, nums) = indentation.correct_indent(source)
+    (ret, nums) = indentation.correct_indent(sub_test,source, vars["per_gaffe"])
     
     header = markup_create_bold("Improper Indentation") + ": "
     for i in nums:
@@ -186,11 +189,9 @@ def test(locations, test_obj, source):
         messages.append(header + m)
      
     # impose maximum penalty if test completely failed 
-    if ret:
-        sub_test.score = -1 * DEDUCTION_PER_GAFFE * len(nums)
-    else:
-        sub_test.score = -1 * STYLE_PENALTY_MAX
-    test_obj.parts.append(sub_test)   
+    if not ret:
+        sub_test.score = -1 * vars["penalty_max"]
+    #test_obj.parts.append(sub_test)   
     
     
      
@@ -200,10 +201,17 @@ def test(locations, test_obj, source):
     
     m = ""
     # cap style deduction
-    if abs(test_obj.score) > STYLE_PENALTY_MAX:
-        m = "Penalty of " + str(abs(test_obj.score)) + " exceeds maximum " 
-        m += "penalty of " + str(STYLE_PENALTY_MAX) + ", assessing maximum.\n\n"
-        test_obj.score = -1 * STYLE_PENALTY_MAX
+    if abs(test_obj.score) > 0 or len(messages) > 0:
+        m = "You are not following an acceptable style, please view our "
+        style_link = markup_create_link("Style Guide", vars["style_guide"])
+        m += style_link
+        m += " for descriptions and examples on proper style.\n\n"
+        
+        if abs(test_obj.score) > vars["penalty_max"]:
+            m = "Penalty of " + str(abs(test_obj.score)) + " exceeds maximum " 
+            m += "penalty of " + str(vars["penalty_max"])
+            m += ", assessing maximum.\n\n"
+            test_obj.score = -1 * vars["penalty_max"]
    
     # add any messages to test object
     if len(messages) > 0:

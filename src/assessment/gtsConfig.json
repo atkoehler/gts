@@ -1,0 +1,192 @@
+{
+"environment": {
+        "working_dir": "working",
+        "includes_dir": "assessment/include",
+        "provided_dir": "assessment/provided",
+        "solution_dir": "assessment/solution",
+        "unittest_dir": "assessment/unittests",        
+        "inputs_dir": "assessment/inputs",
+        "solution_func_dir": "assessment/solution_functions",
+        "makefile": false,
+        "compiler": "g++",
+        "src_name": "madlibs",
+        "src_extension": ".cpp",
+        "exe_name": "test_program",
+        "errors_file": "compiler_errors.txt",
+        "code_provided": true,
+        "solution_name": "solution.cpp",
+        "solution_exe": "solution",
+        "timeout": 5,
+        "max_message_size": 4200
+        },
+"alterations": {
+        "from": ["srand(time(NULL))"],
+        "to":   ["srand(500)"]
+        },
+"tests": {
+        "Submit Date Check": {
+            "type": "flat",
+            "penalty": 20
+            },
+        "Compilation Check": {
+            "penalty": 25
+            },
+        "Proper File Name": {
+            "penalty": 25,
+            "proper_name": "madlibs.cpp"
+            },
+        "Proper Assessment Header": {
+            "header_example": "https://docs.google.com/document/d/1XIVkzTlI0P9Tz3E8kiG5P_PfTRn-BfGq5Ba1Pc81ZPk",
+            "penalty": 25,
+            "author_tag": "@author",
+            "plagiarism_tag": "@par Plagiarism Section",
+            "begin_flag": "BEGIN ASSESSMENT HEADER",
+            "end_flag": "END ASSESSMENT HEADER",
+            "plagiarism_quote": "I hereby certify that the code in this file is ENTIRELY my own original work."
+            },
+        "Indent Command Execution": {
+            "penalty": 25,
+            "base_style": "BSD",
+            "add_flags": ["-cdw", "-nut"]
+            },
+        "Proper Programming Style": {
+            "style_guide": "https://docs.google.com/document/d/1_JBxqkE-1_l6uWgwAJmNjCL240pVDYNIak2d0yyCP0E",
+            "penalty_max": 10,
+            "per_gaffe": 5,
+            "indent_spaces_min": 2,
+            "indent_spaces_max": 6,
+            "indent_spaces_default" : 3,
+            "line_length_max": 80
+            },
+        "Functions Logic Test" : {
+            "cases_output": 3,
+            "library_includes": "includes.txt",
+            "file_name": "logicTestFile.cpp"
+            },
+        "Functions Output Test" : {
+            "cases_output": 3,
+            "library_includes": "includes.txt",
+            "file_name": "outputTestFile.cpp"
+            },
+        "Compare Program Output" : {
+            "cases_output": 3,
+            "tests": {
+                "invalid": {
+                            "name": "Invalid Input",
+                            "files": ["invalid_input.txt"],
+                            "max_score": 5
+                    },
+                "switch_align": {
+                            "name": "Correct Alignment",
+                            "files": ["switch_align_check.txt"],
+                            "max_score": 5
+                    },
+                "whole_game": {
+                            "name": "Whole Game",
+                            "files": ["whole.txt"],
+                            "max_score": 10
+                    }
+                }
+            },
+        "Madlibs Output Check" : {
+            "separator" : "-",
+            "separator_size" : 80, 
+            "input_length" : 10,
+            "input_seed": 500,       
+            "Inputs Utilized" : {
+                    "max_score" : 30,
+                    "min_inputs" : 10                    
+                    },
+            "Paragraph Count" : {
+                    "max_score" : 30,
+                    "min_sentences": 3,
+                    "min_paragraphs": 3
+                    },
+            "Formatting Check" : {
+                    "max_score" : 40,
+                    "max_length" : 80,
+                    "min_paragraphs": 3,
+                    "shortline_word_allowance": 1
+                    }
+            },
+        "Proper Number of Inputs" : {
+            "type" : "penalty",
+            "max_score" : 20,
+            "expected_inputs": 1
+            }
+        },
+"units": {
+        "genieRoom": {
+                    "name": "genieRoom",
+                    "return": "void",
+                    "has_output": true,
+                    "has_input": false,
+                    "tests": {
+                        "primary": {
+                            "files": ["genieRoom.cpp"],
+                            "logic_score": 20,
+                            "output_score": 5
+                            }
+                        },
+                    "inc_solution_funcs": [],
+                    "alterations": {}
+            },
+        "monsterRoom": {
+                    "name": "monsterRoom",
+                    "return": "void",
+                    "has_output": true,
+                    "has_input": false,
+                    "tests": {
+                        "primary": {
+                            "files": ["monsterRoom_v1.cpp", 
+                                      "monsterRoom_v2.cpp",
+                                      "monsterRoom_v3.cpp"],
+                            "logic_score": 20,
+                            "output_score": 5
+                            }
+                        },
+                    "inc_solution_funcs": [],
+                    "alterations": {}
+            },
+        "pictureRoom": {
+                    "name": "pictureRoom",
+                    "return": "void",
+                    "has_output": true,
+                    "has_input": false,
+                    "tests": {
+                        "primary": {
+                            "files": ["pictureRoom.cpp"],
+                            "logic_score": 0,
+                            "output_score": 20
+                            }
+                        },
+                    "inc_solution_funcs": [],
+                    "alterations": {}
+            },
+        "main": {
+                    "name": "main",
+                    "return": "int",
+                    "has_output": true,
+                    "has_input": true,
+                    "tests": {
+                        "primary": {
+                            "files": ["main.cpp"],
+                            "logic_score": 0,
+                            "output_score": 20
+                            }
+                        },
+                    "inc_solution_funcs": ["genieRoom", "monsterRoom", 
+                                      "drawPicture", "pictureRoom"],
+                    "alterations": {
+                                "from": ["void genieRoom", 
+                                         "void monsterRoom",
+                                         "void pictureRoom",
+                                         "void drawPicture"],
+                                "to":   ["void _studVer_genieRoom", 
+                                         "void _studVer_monsterRoom",
+                                         "void _studVer_pictureRoom",
+                                         "void _studVer_drawPicture"]
+                        }
+            }
+    }
+}

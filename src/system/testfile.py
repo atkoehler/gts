@@ -1,25 +1,34 @@
 # TODO: Flags should be in some sort of configuration file?
-BEGIN_HDR_FLAG = "BEGIN ASSIGNMENT HEADER"
-END_HDR_FLAG = "END ASSIGNMENT HEADER"
-DEFAULT_SPACING = 3
-MIN_SPACING = 2
-MAX_SPACING = 6
 
 class SourceFile:
-    def __init__(self, file_loc="", code="", header=[], comments=[], name="", indent_size=0, style_halt=False):
+    def __init__(self, file_loc="", code="", header=[], comments=[], name="", extension="", indent_size=0, style_halt=False):
         self.code = code
         self.header = header
         self.comments = comments
         self.file_loc = file_loc # code path joined with source file name
         self.name = name
+        self.extension = extension
         self.indent_size = indent_size
         
         # Some style checking is depending on others passing
         # This will be True if a dependent test should immediately fail
         self.style_halt = style_halt 
     
-    # TODO: implement try block for opening file
-    def split_file(self):
+    ##
+    #   @brief split the file in pieces: header, comments and code
+    #   @param hdr_begin the string to signal assessment header start
+    #   @param hdr_end the string to signal assessment header end
+    #
+    def split_file(self, hdr_begin, hdr_end):
+        def fix_ctrlm(file_loc):
+            contents = open(file_loc, 'rb').read()
+            s = contents.replace("\r\n", "\n")
+            if -1 != s.find("\r"):
+                s = contents.replace("\r", "\n")
+            open(file_loc, 'wb+').write(s)
+        
+        # TODO: implement try block for opening file
+        fix_ctrlm(self.file_loc)
         source_file = open(self.file_loc)
         source = source_file.read()
         source_file.close()
@@ -41,12 +50,12 @@ class SourceFile:
          
         inHeader = False
         for i in allcomments:
-            if i.lower().find(BEGIN_HDR_FLAG.lower()) != -1:
+            if i.decode('utf-8').lower().find(hdr_begin.lower()) != -1:
                 inHeader = True
                 self.header.append(i)
                 continue
             
-            if i.lower().find(END_HDR_FLAG.lower()) != -1:
+            if i.decode('utf-8').lower().find(hdr_end.lower()) != -1:
                 inHeader = False
                 self.header.append(i)
                 continue
@@ -74,7 +83,13 @@ class SourceFile:
         )
         self.code = re.sub(pattern, replacer, text)
     
-    def determine_indent_size(self):
+    ##
+    #   @brief attempt to determine the indentation block size utilized
+    #   @param default the default spacing to utilize if nothing good is found
+    #   @param min the minimum amount of spaces allowed for 1 indent level
+    #   @param max the maximum amount of spaces allowed for 1 indent level
+    #
+    def determine_indent_size(self, default, min, max):
         from system.utils import expand_all_tabs
         
         # TODO: try block shouldn't return False on exception
@@ -102,7 +117,7 @@ class SourceFile:
         
         self.indent_size = 0
         lines = contents.split("\n")
-        expand_all_tabs(lines, DEFAULT_SPACING)
+        expand_all_tabs(lines, default)
         for (i, line) in enumerate(lines):
             if line.find("{") != -1:
                 if (line.lstrip().find("{") == 0):
@@ -113,11 +128,13 @@ class SourceFile:
                 if line.find("}") == -1:
                     non_blank = next_nonblank(lines, i+1)
                     spacer = indent_amount(lines, non_blank, first_index)
-                    if spacer >= MIN_SPACING and spacer <= MAX_SPACING:
+                    if spacer >= min and spacer <= max:
                         self.indent_size = spacer
                         break
         
-        if self.indent_size < MIN_SPACING or self.indent_size > MAX_SPACING:
-            self.indent_size = DEFAULT_SPACING
+        if self.indent_size < min or self.indent_size > max:
+            self.indent_size = default
 
+
+    
 

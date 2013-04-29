@@ -117,6 +117,12 @@ def markup_create_inlinecode(word):
         
     return "`` " + word + " ``" 
 
+def markup_create_link(text, url):
+    "Create a link using markdown syntax with the specified text-url combo"
+        
+    return "[" + text + "](" + url + ")"
+
+
 def insert_blanks(text):
     "Insert newline after each list item or if not list after every newline"
     

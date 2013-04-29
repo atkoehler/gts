@@ -14,10 +14,15 @@
 # @udpated January 31, 2013
 #
 
+# TODO: figure out the configuration system to get this item from their
+GTS_CONFIG_LOC = "assessment/gtsConfig.json"
+
+import os
 import json
 import sys
 from galah.interact import *
 from system.testfile import *
+from system.config import *
 
 # create configuration object from Galah provided JSON file
 config = GalahConfig().from_file()
@@ -25,9 +30,16 @@ config = GalahConfig().from_file()
 # TODO: should this be be within the setup of the configuration
 sys.path.append(config.harness_directory)
 
+# create configuration object for the test harness 
+gtsConfig_file = open(os.path.join(config.harness_directory, GTS_CONFIG_LOC))
+gtsConfig = GTSConfig().from_file(gtsConfig_file)
+
 # generic return values
 OK = 0
 ERROR = -1
+
+# TODO: remove this list creation once actions are activated in Galah
+config.actions = ["Submit Date Check", "Proper File Name", "Proper Assessment Header", "Proper Programming Style", "Compilation Check", "Madlibs Output Check"]
 
 ##
 # create Galah result object 
@@ -51,78 +63,96 @@ t.name = name
  
 # determine where the source is by running its test
 import system.findsource as findsource
-source_exist = findsource.test((config.testables_directory, config.harness_directory), t, source, True)
-
-# split the file into code, header and comments
-if source_exist:
-    source.split_file()
-    source.determine_indent_size()
+source_exist = findsource.test((config.testables_directory, config.harness_directory), t, source, gtsConfig.environment, True)
 
 # add test to result so feedback exists stating which file was tested if any
 result.add_test(t)
 
-# TODO: remove this list creation once actions are activated in Galah
-config.actions = ["Submit Date Check", "Proper File Name", "Proper Assignment Header", "Proper Programming Style", "Compilation Check", "Functions Logic Test"]
 
 # nothing can be done if no source file was discovered
-if source_exist: 
-    ##
-    # run test if it is within the configuration actions
-    #
-    name = "Submit Date Check"
-    if name in config.actions:
-        # create test object
-        t = GalahTest()
-        t.name = name
-         
-        # run test
-        import modules.latecheck as latecheck
-        completed = latecheck.test((config.testables_directory, config.harness_directory), t, config.submission["timestamp"], config.assignment["due"])
-        
-        # add test to result
-        if completed == OK:
-            result.add_test(t)
-    
-    
-    name = "Proper File Name"
-    if name in config.actions:
-        # create test object
-        t = GalahTest()
-        t.name = name
-         
-        # run test
-        import modules.filename as filename
-        completed = filename.test((config.testables_directory, config.harness_directory), t)
-        
-        # add test to result
-        if completed == OK:
-            result.add_test(t)
-    
-    
-    name = "Proper Assignment Header"
-    if name in config.actions:
+if source_exist:
+    # split the file into code, header and comments
+    key = "Proper Assessment Header"
+    if key in gtsConfig.tests:
+        source.split_file(gtsConfig.tests[key]["begin_flag"], 
+                          gtsConfig.tests[key]["end_flag"])
+    else:
+        flag = "slkdjflakejlskma_fake_line_lajdsklfjslkdjflskjd"
+        source.split_file(flag, flag)
+ 
+    name = "Proper Assessment Header"
+    if name in config.actions and name in gtsConfig.tests:
         # create test object
         t = GalahTest()
         t.name = name
          
         # run test
         import modules.headercheck as headercheck
-        completed = headercheck.test((config.testables_directory, config.harness_directory), t, source, config.submission)
+        completed = headercheck.test((config.testables_directory, config.harness_directory), t, gtsConfig.tests[name], source, config.submission)
+        
+        proper_header = t.score == t.max_score    
+        
+        # add test to result
+        if completed == OK:
+            result.add_test(t)
+    else:
+        proper_header = False
+
+
+# nothing can be done if no source file was discovered
+# skip these tests if no header was discovered too!
+if source_exist and proper_header: 
+    # set up items for future tests 
+    #determine the default spacing for the file
+    name = "Proper Programming Style"
+    if name in config.actions and name in gtsConfig.tests:
+        source.determine_indent_size(
+                        gtsConfig.tests[name]["indent_spaces_default"],
+                        gtsConfig.tests[name]["indent_spaces_min"],
+                        gtsConfig.tests[name]["indent_spaces_max"])
+    else:
+        source.determine_indent_size(3, 2, 6)
+
+    # set up a solution source code file
+    sol_dir = os.path.join(config.harness_directory, gtsConfig.environment["solution_dir"])
+    sol_path = os.path.join(sol_dir, gtsConfig.environment["solution_name"])
+    solution = SourceFile()
+    solution.name = gtsConfig.environment["solution_name"]
+    solution.file_loc = sol_path
+
+    ##
+    # run test if it is within the configuration actions
+    #
+
+    
+    
+    name = "Proper File Name"
+    if name in config.actions and name in gtsConfig.tests:
+        # create test object
+        t = GalahTest()
+        t.name = name
+         
+        # run test
+        import modules.filename as filename
+        completed = filename.test((config.testables_directory, config.harness_directory), t, gtsConfig.tests[name])
         
         # add test to result
         if completed == OK:
             result.add_test(t)
     
     
+
+    
+    
     name = "Proper Programming Style"
-    if name in config.actions:
+    if name in config.actions and name in gtsConfig.tests:
         # create test object
         t = GalahTest()
         t.name = name
          
         # run test
         from modules.style import stylecheck as stylecheck
-        completed = stylecheck.test((config.testables_directory, config.harness_directory), t, source)
+        completed = stylecheck.test((config.testables_directory, config.harness_directory), t, gtsConfig.tests[name], source, gtsConfig.environment)
         
         # add test to result
         if completed == OK:
@@ -130,14 +160,14 @@ if source_exist:
     
     
     name = "Compilation Check"
-    if name in config.actions:
+    if name in config.actions and name in gtsConfig.tests:
         # create test object
         t = GalahTest()
         t.name = name
          
         # run test
         import modules.compilation as compilation
-        completed = compilation.test((config.testables_directory, config.harness_directory), t, source)
+        completed = compilation.test((config.testables_directory, config.harness_directory), t, gtsConfig.tests[name],  source, gtsConfig.environment)
         
         # add test to result
         if completed == OK:
@@ -145,54 +175,193 @@ if source_exist:
      
      
     name = "Indent Command Execution"
-    if name in config.actions:
+    if name in config.actions and name in gtsConfig.tests:
         # create test object
         t = GalahTest()
         t.name = name
          
         # run test
         import modules.indent as indent
-        completed = indent.test((config.testables_directory, config.harness_directory), t, source)
+        completed = indent.test((config.testables_directory, config.harness_directory), t, gtsConfig.tests[name], source, gtsConfig.environment)
         
         # add test to result
         if completed == OK:
             result.add_test(t)
     
     name = "Functions Logic Test"
-    if name in config.actions:
-        #functions = ["monthConvert", "dayConvert", "yearConvert", "dateConvert"]
-        functions = ["genieRoom", "monsterRoom"]
-        # None implies function name + .cpp is the file to utilize
-        files = [None, ["monsterRoom.1.cpp", "monsterRoom.2.cpp", "monsterRoom.3.cpp"]]
-        has_output = [True, True]
-        takes_input = [False, False]
-               
-        for (i, fn) in enumerate(functions):
-            # create test object
-            t = GalahTest()
-            t.name = fn + " logic test"
-            if i % 2 == 0:
-                t.max_score = 25
-            else:
-                t.max_score = 25
-         
-            # run test
-            import modules.unittest as unittest
-            completed = unittest.test((config.testables_directory, config.harness_directory), t, source, fn, has_output[i], takes_input[i], files[i])
-        
+    if name in config.actions and name in gtsConfig.tests:
+        for key, value in gtsConfig.units.iteritems():
+            fn = gtsConfig.units[key]["name"]
+            has_output = gtsConfig.units[key]["has_output"]
+            has_input = gtsConfig.units[key]["has_input"]
+            subs = gtsConfig.units[key]["tests"]            
+            inc_sol = gtsConfig.units[key]["inc_solution_funcs"]
+            
+            # combine global and unit specific alterations
+            import copy
+            alterations = {}
+            alterations = copy.deepcopy(gtsConfig.alterations)
+            for k, v in gtsConfig.units[key]["alterations"].iteritems():
+                for addme in v:
+                    if k in alterations:
+                        alterations[k].append(addme)
+            
+            for test_name, test_vars in subs.iteritems():
+                # set up Galah test based on gtsConfig file
+                t = GalahTest()
+                files = test_vars["files"]
+                if len(subs) == 1:
+                    t.name = fn + " logic test"
+                else:
+                    t.name = fn + " " + test_name + " logic test" 
+                if "logic_score" in test_vars:
+                    t.max_score = test_vars["logic_score"]
+                else:
+                    t.max_score = 0
+                 
+                # run test
+                from modules.unittesting import unittest as unittest
+                completed = unittest.logictest((config.testables_directory, 
+                                            config.harness_directory), 
+                                          t, gtsConfig.tests[name], source, 
+                                          fn, has_output, has_input, files, 
+                                          inc_sol, gtsConfig.environment,
+                                          alterations)
+            
             # add test to result
             if completed == OK:
                 result.add_test(t)
     
+    name = "Functions Output Test"
+    if name in config.actions and name in gtsConfig.tests:
+        for key, value in gtsConfig.units.iteritems():
+            fn = gtsConfig.units[key]["name"]
+            has_output = gtsConfig.units[key]["has_output"]
+            has_input = gtsConfig.units[key]["has_input"]
+            subs = gtsConfig.units[key]["tests"]            
+            inc_sol = gtsConfig.units[key]["inc_solution_funcs"]
+            
+            # combine global and unit specific alterations
+            import copy
+            alterations = {}
+            alterations = copy.deepcopy(gtsConfig.alterations)
+            for k, v in gtsConfig.units[key]["alterations"].iteritems():
+                for addme in v:
+                    if k in alterations:
+                        alterations[k].append(addme)
+            
+            for test_name, test_vars in subs.iteritems():
+                # set up Galah test based on gtsConfig file
+                t = GalahTest()
+                files = test_vars["files"]
+                if len(subs) == 1:
+                    t.name = fn + " output test"
+                else:
+                    t.name = fn + " " + test_name + " output test" 
+                if "output_score" in test_vars:
+                    t.max_score = test_vars["output_score"]
+                else:
+                    t.max_score = 0
+                 
+                # run test
+                from modules.unittesting import unittest as unittest
+                completed = unittest.outputtest((config.testables_directory, 
+                                                 config.harness_directory), 
+                                                t, gtsConfig.tests[name], 
+                                                source, solution, fn, 
+                                                has_output, has_input, files, 
+                                                inc_sol, gtsConfig.environment, 
+                                                alterations)
+            
+            # add test to result
+            if completed == OK:
+                result.add_test(t)
 
+    name = "Compare Program Output"
+    if name in config.actions and name in gtsConfig.tests:
+        allTests = gtsConfig.tests[name]["tests"]
+        alterations = copy.deepcopy(gtsConfig.alterations)
+        
+        for indiv_test, vars in allTests.iteritems():
+            # create test object
+            t = GalahTest()
+            t.name = vars["name"]
+            t.max_score = vars["max_score"]
+
+            inp_dir = os.path.join(config.harness_directory, 
+                                   gtsConfig.environment["inputs_dir"])
+            file_paths = []
+            for f in vars["files"]:
+                file_paths.append(os.path.join(inp_dir, f))
+             
+            # run test
+            import modules.outputcheck as outputcheck
+            completed = outputcheck.test((config.testables_directory, 
+                                          config.harness_directory), 
+                                         t, source, file_paths, 
+                                         gtsConfig.environment, alterations)
+            
+            # add test to result
+            if completed == OK:
+                result.add_test(t)   
+
+    name = "Madlibs Output Check"
+    if name in config.actions and name in gtsConfig.tests:
+        # run test, individual test creation handled inside function
+        # TODO: maybe use parts instead?
+        import modules.madlibs as madlibs
+        madlibs.test((config.testables_directory, 
+                      config.harness_directory), result, 
+                     gtsConfig.tests[name], source, 
+                     gtsConfig.environment)
+        
+
+# calculate the scores associated with result based on tests
+# before applying any potential late penalty
+result.calculate_scores()
+
+name = "Proper Number of Inputs"
+if name in config.actions and name in gtsConfig.tests:
+    # create test object
+    t = GalahTest()
+    t.name = name
+     
+    # run test
+    import modules.inputcount as inputcount
+    completed = inputcount.test((config.testables_directory, config.harness_directory), t, gtsConfig.tests[name], result.score)
+    
+    # add test to result
+    if completed == OK:
+        result.add_test(t)
+
+# calculate the scores associated with result based on tests
+# before applying any potential late penalty
+result.calculate_scores()
+
+name = "Submit Date Check"
+if name in config.actions and name in gtsConfig.tests:
+    # create test object
+    t = GalahTest()
+    t.name = name
+     
+    # run test
+    import modules.latecheck as latecheck
+    completed = latecheck.test((config.testables_directory, config.harness_directory), t, gtsConfig.tests[name], source, config.submission["timestamp"], config.assignment["due"], result.score, result.max_score)
+    
+    # add test to result
+    if completed == OK:
+        result.add_test(t)
 
 # calculate the scores associated with result based on tests
 result.calculate_scores()
 
-
 # min score of 0
-if result.score < 0:
+if result.score < 0 and result.max_score > 0:
     result.score = 0
+elif result.score < 0 and result.max_score == 0:
+    result.max_score = abs(result.score)
+    result.score = 0
+
 
 # TODO: should markup conversion occur all at once?
 # convert all test messages to have proper markdown for newlines

@@ -11,16 +11,6 @@
 #        attached to compilation for feedback such as error messages
 #
 
-# TODO: figure out the configuration system, to hold these values
-# TODO: once complete, utilize import or whatever is needed
-TYPE = ".cpp"
-COMPILER = "g++"
-WORKING_DIR_NAME = "working"
-EXE_NAME = "test_program"
-COMPILER_ERR_FNAME = "compiler_errors.txt"
-PENALTY = 25
-INCLUDES_DIR = "system/include"
-
 from system.utils import *
 from system.procs import *
 
@@ -29,11 +19,13 @@ from system.procs import *
 # 
 # @param locations tuple (location of code, location of harness)
 # @param test_obj the test object containing properties to fill out
+# @param vars the dictionary of variables for the test from conifuration JSON
 # @param source the source object containing name, location and content splits
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return 0 if test completed successfully, otherwise -1
 #
-def test(locations, test_obj, source):
+def test(locations, test_obj, vars, source, env):
     import os
     import shutil
     OK = 0
@@ -42,7 +34,7 @@ def test(locations, test_obj, source):
     harness_dir = locations[1]
     
     # check if working directory exists, if not make one
-    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
+    working_dir = os.path.join(harness_dir, env["working_dir"])
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
         made_working = True
@@ -51,20 +43,20 @@ def test(locations, test_obj, source):
     
     
     # set up compiler error text file path
-    compile_err_path = os.path.join(working_dir, COMPILER_ERR_FNAME)
+    compile_err_path = os.path.join(working_dir, env["errors_file"])
     
     # set up path to executable rename
-    exe_path = os.path.join(working_dir, EXE_NAME)
+    exe_path = os.path.join(working_dir, env["exe_name"])
 
     # attempt compilation
-    ret_val = compile_single(source.file_loc, exe_path, harness_dir)
+    ret_val = compile_single(source.file_loc, exe_path, harness_dir, env)
     
     # set test object message to message of compilation return value
     test_obj.message = markup_create_indent(ret_val["message"], 1)
    
     # enforce penalty if needed 
     if not ret_val["success"]:
-        test_obj.score = -1 * PENALTY
+        test_obj.score = -1 * vars["penalty"]
     
     # remove the working directory if made it
     if made_working:
@@ -81,6 +73,7 @@ def test(locations, test_obj, source):
 # @param file_wpath source file with full path
 # @param output_wpath output file name with full path
 # @param harness_dir full path to harness directory
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return a dictionary with two values. The first boolean with key success.
 #         The second key of message containing a message of compilation success
@@ -88,17 +81,17 @@ def test(locations, test_obj, source):
 #
 # @precondition all included files must be at base level of includes directory
 #
-def compile_single(file_wpath, output_wpath, harness_dir):
+def compile_single(file_wpath, output_wpath, harness_dir, env):
     import os
     import subprocess
     import shutil
     from system.utils import which
 
     # Open /dev/null for dismissing errors or output    
-    nullFile = open(os.devnull, 'w')
+    nullFile = open(os.devnull, 'w+')
 
     # grab proper g++ command 
-    gpp = which(COMPILER)
+    gpp = which(env["compiler"])
 
     # set up successful message
     message = "Compiled successfully"     
@@ -107,10 +100,10 @@ def compile_single(file_wpath, output_wpath, harness_dir):
     file_path = file_wpath[0:file_wpath.rfind("/")+1]
     
     # set up path to includes directory
-    include_path = os.path.join(harness_dir, INCLUDES_DIR)
+    include_path = os.path.join(harness_dir, env["includes_dir"])
     
     # check if working directory exists, if not make one
-    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
+    working_dir = os.path.join(harness_dir, env["working_dir"])
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
         made_working = True
@@ -119,19 +112,49 @@ def compile_single(file_wpath, output_wpath, harness_dir):
     
     
     err_file_path = os.path.join(working_dir, "errors.txt")
+    
+    # attempt to compile any provided source code
+    obj_files = []
+    compiled = True
+    if env["code_provided"]:
+        prov_dir = os.path.join(harness_dir, env["provided_dir"])
+        files = os.listdir(prov_dir)        
+        for file in files:
+            if file.endswith(".o"):
+                dest_path = os.path.join(working_dir, file)
+                file_path = os.path.join(prov_dir, file)
+                copyfile(file_path, dest_path)
+            elif file.endswith(".cpp"):
+                obj_name = file[0:file.find(".cpp")] + ".o"
+                obj_path = os.path.join(working_dir, obj_name)
+                file_path = os.path.join(prov_dir, file)
+                try:
+                    r = check_call([gpp, "-c", "-o", obj_path, 
+                                    "-I", include_path, file_path], 
+                                   stdout=nullFile, stderr=nullFile)
+                    compiled = True
+                    obj_files.append(obj_path)
+                except SystemError:
+                    compiled = False
+                    break
+        
+
     # attempt compilation
-    try:
-        with open(err_file_path, 'w') as errFile:
-            r = check_call([gpp, "-o", output_wpath, 
-                           "-I", include_path, file_wpath],
-                           stdout=nullFile, stderr=errFile)
-        compiled = True 
-    
-    except SystemError:
-        # grab the errors from the error file then eliminate it
-        message = open(err_file_path).read().replace(file_path, "")
-        compiled = False
-    
+    if compiled:
+        try:
+            cmd = [gpp, "-o", output_wpath, "-I", include_path]
+            for f in obj_files:
+                cmd.append(f)
+            cmd.append(file_wpath)
+            with open(err_file_path, 'w+') as errFile:
+                r = check_call(cmd, stdout=nullFile, stderr=errFile)
+            compiled = True 
+        
+        except SystemError:
+            # grab the errors from the error file then eliminate it
+            message = open(err_file_path).read().replace(file_path, "")
+            compiled = False
+        
     # remove the working directory if function created it
     if made_working:
         shutil.rmtree(working_dir)    
@@ -146,6 +169,7 @@ def compile_single(file_wpath, output_wpath, harness_dir):
 # 
 # @param file_wpath source file with full path
 # @param harness_dir full path to harness directory
+# @param env the environment variables dict from JSON config of test suite
 #
 # @return a dictionary with two values. The first boolean with key success.
 #         The second key of message containing either the source code 
@@ -153,14 +177,14 @@ def compile_single(file_wpath, output_wpath, harness_dir):
 #
 # @precondition all included files must be at base level of includes directory
 #
-def strip_comments(file_wpath, harness_dir):
+def strip_comments(file_wpath, harness_dir, env):
     import os
     import subprocess
     import shutil
     from system.utils import which
    
     # grab proper g++ command 
-    gpp = which(COMPILER)
+    gpp = which(env["compiler"])
 
     if gpp is None:
         message = "g++ compiler not found, could not strip comments"
@@ -171,10 +195,10 @@ def strip_comments(file_wpath, harness_dir):
     file_path = file_wpath[0:file_wpath.rfind("/")+1]
     
     # set up path to includes directory
-    include_path = os.path.join(harness_dir, INCLUDES_DIR)
+    include_path = os.path.join(harness_dir, env["includes_dir"])
     
     # check if working directory exists, if not make one
-    working_dir = os.path.join(harness_dir, WORKING_DIR_NAME)
+    working_dir = os.path.join(harness_dir, env["working_dir"])
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
         made_working = True

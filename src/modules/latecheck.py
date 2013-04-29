@@ -7,9 +7,6 @@
 #        submission date and assignment due date.
 #
 
-# TODO: figure out the configuration system to get this item from their
-LATE_PENALTY = 1
-
 from system.utils import *
 
 ## 
@@ -17,12 +14,15 @@ from system.utils import *
 # 
 # @param locations tuple (location of code, location of harness)
 # @param test_obj the test object containing properties to fill out
+# @param vars the dictionary of variables for the test from conifuration JSON
 # @param submit_date submission date from the provided raw submission
 # @param due_date the due date from the provided assignment dictionary 
+# @param score currently tabulated score for the result
+# @param max_score currently tabulated max_score for the result
 #
 # @return 0 if test completed successfully, otherwise -1
 #
-def test(locations, test_obj, submit_date, due_date):
+def test(locations, test_obj, vars, submit_date, due_date, score, max_score):
     OK = 0
     from datetime import datetime
 
@@ -40,9 +40,22 @@ def test(locations, test_obj, submit_date, due_date):
     if datetime.strptime(submit_date, sdf) < datetime.strptime(due_date, ddf):
         test_obj.message = "Submitted before the deadline."
     else:
-        test_obj.score = -1 * LATE_PENALTY
         test_obj.message = "Submitted " + markup_create_bold("after") + " the "
         test_obj.message += "deadline."
+        if vars["type"] == "flat":
+            test_obj.score = -1 * vars["penalty"]
+        elif vars["type"] == "cap":
+            capped = max_score - vars["penalty"]
+            if capped < score and score > 0:
+                test_obj.score = -1 * (score - capped)
+                test_obj.message += " Applying penalty to attain capped "
+                test_obj.message += "maximum score."
+            else:
+                test_obj.score = 0
+                test_obj.message += " Score is not over the capped maximum, "
+                test_obj.message += "no penalty is required."
+        else:
+            test_obj.score = -1 * vars["penalty"]
 
     return OK
 

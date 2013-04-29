@@ -1,0 +1,17 @@
+Specific unit tests should go in this folder One file per function, one main
+function and one includes.txt
+
+For example if you had one function to be tested named monthConvert there would
+exist a monthConvert.cpp that contains the unit testing logic and function, a
+main.cpp that contains the core main function that is utilized to run the unit
+test and an includes.txt that contains all the #include statements requried for
+the unit test.
+
+Every unit test is nearly identical. You must define or change a few things:
+   1) the type for the return value stored in ret_val
+   2) change the answers vector/array so it has the values it should
+   3) define a vector for each of that parameters
+   4) define what goes in the input vector if warranted
+   5) update the invocations to the generic STUDENT_FUNC_NAME 
+        so that proper amount and types of parameters are utilized
+   6) update the includes.txt file to contain any additional libraries needed
