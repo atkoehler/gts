@@ -38,7 +38,7 @@ easily parsed for other purposes.
 The Galah Testing Suite has several project goals.  A few deserving more
 length descriptions are listed below.
 
-### Assignment Independece
+### Assignment Independence
 A primary goal of the project is that each assignment test harness must be
 independent of all other test harnesses. This means that there will
 certainly be reproduced code when looking through multiple harnesses at
